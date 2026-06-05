@@ -86,8 +86,8 @@
         "icon/arrows/left.svg",
         "icon/arrows/right.svg",
         "icon/arrows/leftup.svg",
-        "icon/arrows/leftdown.svg",
         "icon/arrows/rightup.svg",
+        "icon/arrows/leftdown.svg",
         "icon/arrows/rightdown.svg",
         "icon/arrows/upleft.svg",
         "icon/arrows/upright.svg",
@@ -131,6 +131,7 @@
       "description": "",
       "category": "enter",
       "feature": "selectIcon",
+      "useList": true,
       "type": "composite",
       "iconNames":["乘车"],
       "iconFiles": [

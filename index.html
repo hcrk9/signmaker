@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="global.css">
+    <link rel="shortcut icon" href="Logo.svg">
     <title>Sign Maker by Chitose.City</title>
 </head>
 
@@ -12,6 +13,10 @@
     <section class="leftPanel">
         <div class="logo">
             <img src="logo.png" alt="Sign Maker by Chitose.City">
+            <div class="info">
+                <span>alpha release 20260605.2</span>
+                <a href="https://chitose.city">More on Chitose.City</a>
+            </div>
         </div>
         <div class="componentsPanel">
             <div id="categoriesList"></div>
@@ -1615,109 +1620,199 @@
         const canvas = document.getElementById('canvas');
         if (!canvas) return;
 
-        // 1. 临时重置缩放，确保 getComputedStyle 获取到的是 1:1 的真实物理像素尺寸
+        // 1. 临时重置页面缩放，确保物理像素坐标计算为 1:1
         const originalZoom = canvas.style.zoom || '1';
         canvas.style.zoom = '1';
 
-        // 2. 深度克隆一份画布 DOM
-        const clone = canvas.cloneNode(true);
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
+        
+        // 获取画布背景色
+        const canvasStyle = window.getComputedStyle(canvas);
+        const canvasSvgBg = canvasStyle.backgroundColor && canvasStyle.backgroundColor !== 'transparent' && canvasStyle.backgroundColor !== 'rgba(0, 0, 0, 0)' 
+                            ? canvasStyle.backgroundColor : '#ffffff';
 
-        // 移除拖拽时产生的临时辅助线
-        const insertLine = clone.querySelector('.insert-line');
-        if (insertLine) insertLine.remove();
+        // 2. 初始化标准纯矢量 SVG 骨架
+        let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">\n`;
+        
+        // 渲染标牌底色
+        svgContent += `  <rect width="${width}" height="${height}" fill="${canvasSvgBg}" />\n`;
 
-        // 模拟 canvas::after 伪元素的边框并塞入 SVG 导出中
-        const afterStyle = window.getComputedStyle(canvas, '::after');
-        if (afterStyle && afterStyle.borderStyle !== 'none' && afterStyle.borderWidth !== '0px') {
-            const afterMock = document.createElement('div');
-            afterMock.className = 'canvas-after-mock';
-            
-            // 获取 computed 属性值
-            const bw = afterStyle.getPropertyValue('border-width') || '6px 6px 10px 6px';
-            const bs = afterStyle.getPropertyValue('border-style') || 'solid';
-            const bc = afterStyle.getPropertyValue('border-color') || '#151515';
-            const br = afterStyle.getPropertyValue('border-radius') || 'inherit';
-            const topVal = afterStyle.getPropertyValue('top') || '0px';
-            const leftVal = afterStyle.getPropertyValue('left') || '0px';
-            const rightVal = afterStyle.getPropertyValue('right') || '0px';
-            const bottomVal = afterStyle.getPropertyValue('bottom') || '0px';
+        // 3. 递归遍历 DOM 树，将每个可视元素提取并重组为标准的绝对坐标 SVG 节点
+        async function processElement(element) {
+            const styles = window.getComputedStyle(element);
+            if (styles.display === 'none' || styles.visibility === 'hidden' || styles.opacity === '0') return;
 
-            const afterMockStyle = `
-                position: absolute;
-                top: ${topVal}; left: ${leftVal}; right: ${rightVal}; bottom: ${bottomVal};
-                border-width: ${bw};
-                border-style: ${bs};
-                border-color: ${bc};
-                border-radius: ${br};
-                pointer-events: none;
-                z-index: 10;
-                box-sizing: border-box;
-            `.trim().replace(/\n\s*/g, ' ');
+            // 计算当前元素相对于标牌画布（canvas）的绝对物理坐标与宽高
+            const rect = element.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
+            const x = rect.left - canvasRect.left;
+            const y = rect.top - canvasRect.top;
+            const w = rect.width;
+            const h = rect.height;
 
-            afterMock.setAttribute('style', afterMockStyle);
-            clone.appendChild(afterMock);
-        }
+            if (w <= 0 || h <= 0) return;
 
-        // 3. 定义样式内联函数：将 CSS 文件的样式强行固定到 HTML 标签上
-        function inlineAllStyles(sourceEl, targetEl) {
-            const computedStyle = window.getComputedStyle(sourceEl);
-            let styleString = '';
+            // 情况 A：处理带有背景色的容器色块（如各个 zone、导向条色块等）
+            const bg = styles.backgroundColor;
+            if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent' && !element.classList.contains('canvasViewer')) {
+                const rx = parseFloat(styles.borderTopLeftRadius) || 0;
+                const ry = parseFloat(styles.borderTopLeftRadius) || 0;
+                svgContent += `  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" ry="${ry}" fill="${bg}" />\n`;
+            }
 
-            // 提取关键的矢量渲染样式
-            const propertiesToCopy = [
-                'position', 'display', 'flex-direction', 'justify-content', 'align-items',
-                'flex', 'flex-grow', 'flex-shrink', 'flex-basis',
-                'width', 'height', 'margin', 'padding', 'box-sizing',
-                'background-color', 'color', 'font-family', 'font-size', 'font-weight', 'text-align', 'line-height',
-                'border', 'border-radius', 'border-width', 'border-style', 'border-color',
-                'transform', 'opacity', 'visibility', 'overflow', 'gap'
-            ];
-
-            propertiesToCopy.forEach(prop => {
-                const value = computedStyle.getPropertyValue(prop);
-                if (value) {
-                    styleString += `${prop}: ${value}; `;
+            // 情况 B：图片/图标元素处理（SVG 提纯为纯路径曲线，PNG/JPG 保持位图）
+            if (element.tagName === 'IMG') {
+                const src = element.getAttribute('src') || element.src;
+                if (src) {
+                    if (src.endsWith('.svg') || src.startsWith('data:image/svg+xml')) {
+                        try {
+                            let svgText = '';
+                            if (src.startsWith('data:')) {
+                                svgText = decodeURIComponent(src.split(',')[1]);
+                            } else {
+                                const res = await fetch(src);
+                                svgText = await res.text();
+                            }
+                            svgText = svgText.replace(/<\?xml[\s\S]*?\?>/g, '').replace(/<!DOCTYPE[\s\S]*?>/g, '');
+                            const contentMatch = svgText.match(/<svg[\s\S]*?>([\s\S]*?)<\/svg>/i);
+                            if (contentMatch && contentMatch[1]) {
+                                let innerContent = contentMatch[1];
+                                const viewBoxMatch = svgText.match(/viewBox=["']([^"']+)["']/i);
+                                let transformStr = `matrix(1 0 0 1 ${x} ${y})`;
+                                if (viewBoxMatch) {
+                                    const vb = viewBoxMatch[1].trim().split(/\s+/).map(Number);
+                                    if (vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
+                                        const scaleX = w / vb[2];
+                                        const scaleY = h / vb[3];
+                                        transformStr = `matrix(${scaleX} 0 0 ${scaleY} ${x - vb[0] * scaleX} ${y - vb[1] * scaleY})`;
+                                    }
+                                }
+                                const iconFill = styles.color || '#ffffff';
+                                svgContent += `  <g class="vector-icon" transform="${transformStr}" fill="${iconFill}">\n${innerContent}\n  </g>\n`;
+                            }
+                        } catch (err) {
+                            console.warn(`图标提取失败: ${src}`, err);
+                        }
+                    } else {
+                        let base64Src = src;
+                        if (!src.startsWith('data:')) {
+                            try {
+                                const res = await fetch(src);
+                                const blob = await res.blob();
+                                base64Src = await new Promise((resolve) => {
+                                    const reader = new FileReader();
+                                    reader.onloadend = () => resolve(reader.result);
+                                    reader.readAsDataURL(blob);
+                                });
+                            } catch (e) {
+                                console.error('位图转码失败:', src, e);
+                            }
+                        }
+                        svgContent += `  <image x="${x}" y="${y}" width="${w}" height="${h}" xlink:href="${base64Src}" />\n`;
+                    }
                 }
-            });
+                return;
+            }
 
-            // 将抓取到的全量样式写入克隆体
-            targetEl.setAttribute('style', styleString);
+            // 情况 C：【精简、明确的中英文文本分离方案】
+            for (let child of element.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() !== '') {
+                    const rawText = child.textContent.trim();
 
-            // 递归处理所有子节点
-            const sourceChildren = sourceEl.children;
-            const targetChildren = targetEl.children;
-            for (let i = 0; i < sourceChildren.length; i++) {
-                inlineAllStyles(sourceChildren[i], targetChildren[i]);
+                    const fontSize = styles.fontSize;
+                    const fontWeight = styles.fontWeight;
+                    const fontColor = styles.color;
+
+                    // 1. 动态确定文本对齐锚点
+                    const textAlign = styles.textAlign || 'left';
+                    let textAnchor = 'start';
+                    let textX = x;
+
+                    if (textAlign === 'center' || styles.justifyContent === 'center') {
+                        textAnchor = 'middle';
+                        textX = x + w / 2;
+                    } else if (textAlign === 'right' || styles.justifyContent === 'flex-end') {
+                        textAnchor = 'end';
+                        textX = x + w;
+                    }
+
+                    // 2. 完美的垂直居中数学对齐公式，消除一切错位偏上或偏下
+                    const paddingTop = parseFloat(styles.paddingTop) || 0;
+                    const paddingBottom = parseFloat(styles.paddingBottom) || 0;
+                    const fSize = parseFloat(fontSize) || 16;
+                    const textY = y + paddingTop + (h - paddingTop - paddingBottom) / 2 + (fSize * 0.35);
+
+                    // 3. 将文字按照「中文字符」和「非中文字符（西文/数字/空格）」进行严格拆分
+                    // \u4e00-\u9fa5 是中文字符集，\u3000-\u303f 是中文标点符号
+                    const tokens = rawText.split(/([\u4e00-\u9fa5\u3000-\u303f]+)/g).filter(Boolean);
+
+                    // 构造精准声明字体的 <text> 节点
+                    let textNodeStr = `  <text x="${textX}" y="${textY}" font-size="${fontSize}" font-weight="${fontWeight}" fill="${fontColor}" text-anchor="${textAnchor}">`;
+                    
+                    for (let token of tokens) {
+                        // 如果包含中文字符，绑定 IBM Plex Sans SC，否则绑定 Geist
+                        const isCJK = /[\u4e00-\u9fa5\u3000-\u303f]/.test(token);
+                        const targetFont = isCJK ? 'IBM Plex Sans SC' : 'Geist';
+
+                        // XML 安全转义，防止 ParserError
+                        const escapedToken = token
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&apos;');
+
+                        // 用 tspan 将中西文字体绝对锁死，杜绝渲染引擎胡乱回退
+                        textNodeStr += `<tspan font-family="${targetFont}">${escapedToken}</tspan>`;
+                    }
+                    textNodeStr += `</text>\n`;
+                    
+                    svgContent += textNodeStr;
+                }
+            }
+
+            // 递归向下处理子节点
+            for (let child of element.children) {
+                if (!child.classList.contains('insert-line') && !child.classList.contains('lighting-overlay') && !child.classList.contains('fade-overlay')) {
+                    await processElement(child);
+                }
             }
         }
 
-        // 4. 执行全量样式固化
-        inlineAllStyles(canvas, clone);
+        // 4. 标牌外壳描边转矢量路径
+        const afterStyle = window.getComputedStyle(canvas, '::after');
+        if (afterStyle && afterStyle.borderStyle !== 'none' && afterStyle.borderWidth !== '0px') {
+            const borderTop = parseFloat(afterStyle.borderTopWidth) || 0;
+            const borderLeft = parseFloat(afterStyle.borderLeftWidth) || 0;
+            const borderBottom = parseFloat(afterStyle.borderBottomWidth) || 0;
+            const borderRight = parseFloat(afterStyle.borderRightWidth) || 0;
+            const borderColor = afterStyle.borderColor || '#151515';
+            const borderRadius = parseFloat(afterStyle.borderRadius) || 0;
 
-        // 5. 将图片（如小图标）同步转换为 Base64 矢量/位图内嵌（防止沙箱拦截路径）
-        await convertImagesToBase64(clone);
+            if (borderTop > 0 || borderLeft > 0) {
+                if (borderTop === borderLeft && borderTop === borderBottom && borderTop === borderRight) {
+                    svgContent += `  <rect x="${borderTop / 2}" y="${borderTop / 2}" width="${width - borderTop}" height="${height - borderTop}" rx="${borderRadius}" ry="${borderRadius}" fill="none" stroke="${borderColor}" stroke-width="${borderTop}" stroke-linejoin="round" />\n`;
+                } else {
+                    svgContent += `  \n`;
+                    svgContent += `  <path d="M0,0 L${width},0 L${width},${height} L0,${height} Z M${borderLeft},${borderTop} L${borderLeft},${height - borderBottom} L${width - borderRight},${height - borderBottom} L${width - borderRight},${borderTop} Z" fill="${borderColor}" />\n`;
+                }
+            }
+        }
 
-        // 恢复网页上的缩放
+        // 5. 按层级顺序依次扫描渲染所有的 Zone 色块及内部组件
+        const zones = canvas.querySelectorAll('.zone');
+        for (let zone of zones) {
+            await processElement(zone);
+        }
+
+        svgContent += `</svg>`;
+
+        // 6. 还原网页当前的真实缩放状态
         canvas.style.zoom = originalZoom;
 
-        // 6. 获取标牌的最终精确绝对宽高
-        const width = canvas.offsetWidth;
-        const height = canvas.offsetHeight;
-
-        // 7. 组装纯矢量结构的 SVG
-        // 关键点：不再依赖外部外部 CSS，所有的样式全部都在标签的 style 属性里
-        const svgString = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
-        <foreignObject width="100%" height="100%">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="margin: 0; padding: 0; width: 100%; height: 100%;">
-                ${clone.outerHTML}
-            </div>
-        </foreignObject>
-    </svg>
-            `.trim();
-
-        // 8. 触发下载
-        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        // 7. 生成离线标准 SVG 矢量文件并触发浏览器下载
+        const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
