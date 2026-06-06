@@ -298,7 +298,6 @@ h3 {
     left: 50%;
     transform: translateX(-50%);
     width: 360px;
-    max-height: 280px;
     background: var(--bg-panel);
     padding: 12px;
     display: flex;
@@ -410,7 +409,7 @@ h3 {
     color: var(--text-control);
     margin-bottom: 4px;
     flex: 1 1 0px;
-    min-width: 80px;
+    min-width: 110px;
 
 
 }

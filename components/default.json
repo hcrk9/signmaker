@@ -249,7 +249,7 @@
       "description": "",
       "thumbnailBg": "dark",
       "category": "misc",
-      "feature": "selectLine editText",
+      "feature": "editText",
       "type": "composite",
       "ingredients": [
         {

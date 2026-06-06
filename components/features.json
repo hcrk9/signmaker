@@ -16,6 +16,16 @@
         "type": "text",
         "target": ".textEN",
         "label": "英文"
+      },
+      {
+        "type": "dropdown",
+        "label": "对齐",
+        "options": [
+          { "name": "左", "value": "left" },
+          { "name": "中", "value": "center" },
+          { "name": "右", "value": "right" }
+        ],
+        "useList": true
       }
     ]
   },
