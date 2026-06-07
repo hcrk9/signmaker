@@ -3,21 +3,25 @@
     "label": "编辑文本",
     "controls": [
       {
+        "id": "textNumber",
         "type": "text",
         "target": ".largeText",
         "label": "数字"
       },
       {
+        "id": "textCN",
         "type": "text",
         "target": ".textCN",
         "label": "中文"
       },
       {
+        "id": "textEN",
         "type": "text",
         "target": ".textEN",
         "label": "英文"
       },
       {
+        "id": "textAlign",
         "type": "dropdown",
         "label": "对齐",
         "options": [
@@ -33,6 +37,7 @@
     "label": "旋转角度",
     "controls": [
       {
+        "id": "iconDirection",
         "type": "select",
         "target": ".icon",
         "label": "方向",
@@ -77,10 +82,12 @@
     "label": "线路设置",
     "controls": [
       {
+        "id": "lineDropdown",
         "type": "dropdown",
         "label": ""
       },
       {
+        "id": "lineCustomColor",
         "type": "color",
         "target": ".colorBar",
         "label": "自定义线路色"
@@ -91,6 +98,7 @@
     "label": "选择图标",
     "controls": [
       {
+        "id": "iconDropdown",
         "type": "dropdown",
         "target": "img"
       }
@@ -100,8 +108,35 @@
     "label": "选择设施",
     "controls": [
       {
+        "id": "facilityDropdown",
         "type": "dropdown",
         "target": "img"
+      }
+    ]
+  },
+  "zoneSettings": {
+    "label": "区域设置",
+    "controls": [
+      {
+        "id": "zoneWidth",
+        "type": "dropdown",
+        "label": "字宽",
+        "options": [
+          { "name": "标准", "value": "normal" },
+          { "name": "紧缩", "value": "condensed" }
+        ],
+        "useList": true
+      },
+      {
+        "id": "zoneAlign",
+        "type": "dropdown",
+        "label": "对齐",
+        "options": [
+          { "name": "左", "value": "left" },
+          { "name": "中", "value": "center" },
+          { "name": "右", "value": "right" }
+        ],
+        "useList": true
       }
     ]
   },
@@ -109,13 +144,17 @@
     "label": "高级选项",
     "controls": [
       {
-        "type": "dropdown",
-        "label": "组件宽度",
-        "options": [
-          { "name": "适应", "value": "fit" },
-          { "name": "填充", "value": "fill" }
-        ],
-        "useList": true
+        "id": "widthMode",
+        "type": "widthMode",
+        "label": "宽度模式"
+      },
+      {
+        "id": "letterSpacing",
+        "type": "number",
+        "target": "self",
+        "label": "文字间距(px)",
+        "step": 0.5,
+        "property": "letterSpacing"
       }
     ]
   },
@@ -123,6 +162,7 @@
     "label": "颜色设置",
     "controls": [
       {
+        "id": "colorBarColor",
         "type": "color",
         "target": ".colorBar",
         "label": "色带颜色"

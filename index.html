@@ -493,13 +493,20 @@
         const btnLeft = document.getElementById('btnLeft');
         const btnRight = document.getElementById('btnRight');
 
-        const isMoveable = selectedElement && !selectedElement.classList.contains('zone') && selectedElement.closest('.zone');
+        const isMoveable = selectedElement && (selectedElement.classList.contains('zone') || (!selectedElement.classList.contains('zone') && selectedElement.closest('.zone')));
         let canMoveLeft = false;
         let canMoveRight = false;
         if (isMoveable) {
-            const zone = selectedElement.closest('.zone');
-            const siblings = Array.from(zone.children).filter(child => !child.classList.contains('insert-line'));
-            const index = siblings.indexOf(selectedElement);
+            let parent, siblings, index;
+            if (selectedElement.classList.contains('zone')) {
+                parent = document.getElementById('canvas');
+                siblings = Array.from(parent.children).filter(child => child.classList.contains('zone'));
+                index = siblings.indexOf(selectedElement);
+            } else {
+                parent = selectedElement.closest('.zone');
+                siblings = Array.from(parent.children).filter(child => !child.classList.contains('insert-line'));
+                index = siblings.indexOf(selectedElement);
+            }
             canMoveLeft = index > 0;
             canMoveRight = index >= 0 && index < siblings.length - 1;
         }
@@ -514,17 +521,27 @@
 
     function moveSelectedElement(direction) {
         if (!selectedElement) return;
-        const zone = selectedElement.closest('.zone');
-        if (!zone || selectedElement.classList.contains('zone')) return;
+        
+        let parent, siblings, index;
+        const isZone = selectedElement.classList.contains('zone');
 
-        const siblings = Array.from(zone.children).filter(child => !child.classList.contains('insert-line'));
-        const index = siblings.indexOf(selectedElement);
+        if (isZone) {
+            parent = document.getElementById('canvas');
+            siblings = Array.from(parent.children).filter(child => child.classList.contains('zone'));
+            index = siblings.indexOf(selectedElement);
+        } else {
+            parent = selectedElement.closest('.zone');
+            if (!parent) return;
+            siblings = Array.from(parent.children).filter(child => !child.classList.contains('insert-line'));
+            index = siblings.indexOf(selectedElement);
+        }
+
         if (index === -1) return;
 
         if (direction === 'left' && index > 0) {
-            zone.insertBefore(selectedElement, siblings[index - 1]);
+            parent.insertBefore(selectedElement, siblings[index - 1]);
         } else if (direction === 'right' && index < siblings.length - 1) {
-            zone.insertBefore(siblings[index + 1], selectedElement);
+            parent.insertBefore(siblings[index + 1], selectedElement);
         } else {
             return;
         }
@@ -748,38 +765,103 @@ function applyHorizontalStretch(element, ratio) {
                 const canvasEl = document.getElementById('canvas');
                 const isCanvasFixed = canvasEl.style.width && canvasEl.style.width !== 'auto';
                 
-                // 创建带 label 的控制行
-                const row = document.createElement('div');
-                row.className = 'controlRow';
-                const labelEl = document.createElement('label');
-                labelEl.textContent = '宽度';
-                row.appendChild(labelEl);
+                // 宽度模式控制：适应 / 填充 / 固定
+                const rowWidth = document.createElement('div');
+                rowWidth.className = 'controlRow widthMode';
+                const labelWidth = document.createElement('label');
+                labelWidth.textContent = '宽度模式';
+                rowWidth.appendChild(labelWidth);
                 
                 const listEl = document.createElement('div');
                 listEl.className = 'optionListGrid';
 
                 const currentFlex = element.style.flex;
-                const currentWidthVal = (currentFlex === '1' || currentFlex === '1 1 0px' || currentFlex === '1 1 0%') ? 'fill' : 'fit';
+                const hasFixedWidth = element.style.width && element.style.width !== 'auto' && element.style.width !== '';
+                let currentMode = 'fit';
+                if (hasFixedWidth) {
+                    currentMode = 'fixed';
+                } else if (currentFlex === '1' || currentFlex === '1 1 0px' || currentFlex === '1 1 0%') {
+                    currentMode = 'fill';
+                }
 
-                [{ value: 'fit', label: '适应' }, { value: 'fill', label: '填充' }].forEach(opt => {
+                const widthInput = document.createElement('input');
+                widthInput.type = 'number';
+                widthInput.step = '10';
+                widthInput.style.marginLeft = '4px';
+                widthInput.style.display = (currentMode === 'fixed') ? 'inline-block' : 'none';
+                widthInput.value = hasFixedWidth ? parseInt(element.style.width) : element.offsetWidth;
+
+                const updateWidthState = (mode, val) => {
+                    listEl.querySelectorAll('.optionBtn').forEach(b => b.classList.remove('active'));
+                    const targetBtn = Array.from(listEl.children).find(b => b.dataset.value === mode);
+                    if (targetBtn && !targetBtn.disabled) targetBtn.classList.add('active');
+
+                    if (mode === 'fit') {
+                        element.style.flex = 'none';
+                        element.style.width = '';
+                        widthInput.style.display = 'none';
+                    } else if (mode === 'fill') {
+                        element.style.flex = '1';
+                        element.style.width = '';
+                        widthInput.style.display = 'none';
+                    } else if (mode === 'fixed') {
+                        element.style.flex = 'none';
+                        const w = val || widthInput.value || element.offsetWidth;
+                        element.style.width = `${w}px`;
+                        widthInput.style.display = 'inline-block';
+                        widthInput.value = w;
+                    }
+                };
+
+                [{ value: 'fit', label: '适应' }, { value: 'fill', label: '填充' }, { value: 'fixed', label: '固定' }].forEach(opt => {
                     const btn = document.createElement('button');
                     btn.className = 'optionBtn';
                     btn.textContent = opt.label;
+                    btn.dataset.value = opt.value;
                     if (opt.value === 'fill' && !isCanvasFixed) {
                         btn.disabled = true;
                         btn.title = '仅限固定宽度';
                     }
-                    if (opt.value === currentWidthVal) btn.classList.add('active');
+                    if (opt.value === currentMode) btn.classList.add('active');
                     btn.addEventListener('click', () => {
-                        element.style.flex = (opt.value === 'fill') ? '1' : 'none';
-                        listEl.querySelectorAll('.optionBtn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
+                        updateWidthState(opt.value);
                     });
                     listEl.appendChild(btn);
                 });
 
-                row.appendChild(listEl);
-                group.appendChild(row);
+                widthInput.addEventListener('input', () => {
+                    updateWidthState('fixed', widthInput.value);
+                });
+
+                rowWidth.appendChild(listEl);
+                rowWidth.appendChild(widthInput);
+                group.appendChild(rowWidth);
+
+                // 文字间距设置
+                const rowSpacing = document.createElement('div');
+                rowSpacing.className = 'controlRow letterSpacing';
+                const labelSpacing = document.createElement('label');
+                labelSpacing.textContent = '文字间距';
+                rowSpacing.appendChild(labelSpacing);
+
+                const spacingInput = document.createElement('input');
+                spacingInput.type = 'number';
+                spacingInput.step = '0.5';
+                const firstTextEl = element.querySelector('.largeText, .textCN, .textEN');
+                const currentSpacing = firstTextEl ? parseFloat(firstTextEl.style.letterSpacing) || 0 : 0;
+                spacingInput.value = currentSpacing;
+
+                spacingInput.addEventListener('input', () => {
+                    const val = spacingInput.value;
+                    const textEls = element.querySelectorAll('.largeText, .textCN, .textEN');
+                    textEls.forEach(el => {
+                        el.style.letterSpacing = val ? `${val}px` : '';
+                    });
+                });
+
+                rowSpacing.appendChild(spacingInput);
+                group.appendChild(rowSpacing);
+
                 container.appendChild(group);
                 return;
             }
@@ -820,108 +902,90 @@ function applyHorizontalStretch(element, ratio) {
                 return;
             }
 
-            if (featKey === 'zoneTextWidth') {
-                const group = document.createElement('div');
-                group.className = `featureGroup ${featKey}`;
-                group.innerHTML = `<h4>字宽设置</h4>`;
+            if (featKey === 'zoneTextWidth' || featKey === 'zoneAlign') {
+                // 合并字宽和对齐设置到统一的“区域设置”组（由配置驱动）
+                let group = container.querySelector('.featureGroup.zoneSettings');
+                if (!group) {
+                    const config = featureConfig['zoneSettings'];
+                    if (!config) return;
+                    group = document.createElement('div');
+                    group.className = `featureGroup zoneSettings`;
+                    group.innerHTML = `<h4>${config.label}</h4>`;
+                    container.appendChild(group);
 
-                const listEl = document.createElement('div');
-                listEl.className = 'optionListGrid';
-
-                // Detect current state from .largeText font-stretch (variable font axis)
-                const largeTextEl = element.querySelector('.largeText');
-                const isCond = largeTextEl && largeTextEl.style.fontStretch === '75%';
-                const currentTextWidthVal = isCond ? 'condensed' : 'normal';
-
-                [{ value: 'normal', label: '标准' }, { value: 'condensed', label: '紧缩' }].forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'optionBtn';
-                    btn.textContent = opt.label;
-                    if (opt.value === currentTextWidthVal) btn.classList.add('active');
-                    btn.addEventListener('click', () => {
-                        listEl.querySelectorAll('.optionBtn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        // Only apply font-stretch to .largeText which uses Noto Sans variable font (wdth axis)
-                        const varFontEls = element.querySelectorAll('.largeText');
-                        varFontEls.forEach(el => {
-                            el.style.fontStretch = (opt.value === 'condensed') ? '75%' : '';
-                        });
-                    });
-                    listEl.appendChild(btn);
-                });
-
-                group.appendChild(listEl);
-                container.appendChild(group);
-                return;
-            }
-
-            if (featKey === 'zoneAlign') {
-                const group = document.createElement('div');
-                group.className = `featureGroup ${featKey}`;
-                group.innerHTML = `<h4>对齐方向</h4>`;
-            
-                const listEl = document.createElement('div');
-                listEl.className = 'optionListGrid';
-            
-                const firstAlignText = element.querySelector('.largeText, .textCN, .textEN');
-                // 区域对齐状态独立，仅从 dataset.zoneAlign 读取，默认为 'left'
-                const currentAlignVal = element.dataset.zoneAlign || 'left';
-            
-                const applyZoneAlignment = (alignValue) => {
-                    element.dataset.zoneAlign = alignValue;
-                
-                    // 1. 映射并设置 zone (element) 的 justify-content 属性
-                    const justifyMapping = {
-                        'left': 'flex-start',
-                        'center': 'center',
-                        'right': 'flex-end'
-                    };
-                    element.style.justifyContent = justifyMapping[alignValue] || 'flex-start';
-                
-                    // Apply text-align to all text elements within the zone
-                    // 但跳过已手动设置对齐的组件（通过检查 dataset.manualAlign）
-                    const textEls = element.querySelectorAll('.largeText, .textCN, .textEN');
-                    textEls.forEach(el => { 
-                        // 查找该文本元素所属的组件（可能是 element 本身或其子组件）
-                        const parentComponent = el.closest('[data-feature]') || el.closest('.zone');
-                        // 只有当组件没有手动设置对齐时，才应用区域对齐
-                        if (!parentComponent || !parentComponent.dataset.manualAlign) {
-                            el.style.textAlign = alignValue; 
+                    config.controls.forEach(control => {
+                        const listEl = document.createElement('div');
+                        listEl.className = 'optionListGrid';
+                        if (control.id) {
+                            listEl.classList.add(control.id);
                         }
-                    });
-                
-                    // Apply colorBarAdjustment and invertOrder per composite config
-                    const compositeEls = element.querySelectorAll('.composite');
-                    compositeEls.forEach(compEl => {
-                        const classes = compEl.className.split(/\s+/);
-                        const compConfig = compositeComponents.find(c => classes.includes(c.id));
-                        if (!compConfig) return;
-                    
-                        if (compConfig.colorBarAdjustment) {
-                            const colorBar = compEl.querySelector('.colorBar');
-                            if (colorBar) colorBar.style.order = (alignValue === 'right') ? '99' : '';
+
+                        if (control.label === '字宽') {
+                            const largeTextEl = element.querySelector('.largeText');
+                            const isCond = largeTextEl && largeTextEl.style.fontStretch === '75%';
+                            const currentVal = isCond ? 'condensed' : 'normal';
+
+                            control.options.forEach(opt => {
+                                const btn = document.createElement('button');
+                                btn.className = 'optionBtn';
+                                btn.textContent = opt.name;
+                                if (opt.value === currentVal) btn.classList.add('active');
+                                btn.addEventListener('click', () => {
+                                    listEl.querySelectorAll('.optionBtn').forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    const varFontEls = element.querySelectorAll('.largeText');
+                                    varFontEls.forEach(el => {
+                                        el.style.fontStretch = (opt.value === 'condensed') ? '75%' : '';
+                                    });
+                                });
+                                listEl.appendChild(btn);
+                            });
+                        } else if (control.label === '对齐') {
+                            const currentVal = element.dataset.zoneAlign || 'left';
+                            const applyZoneAlignment = (alignValue) => {
+                                element.dataset.zoneAlign = alignValue;
+                                const justifyMapping = { 'left': 'flex-start', 'center': 'center', 'right': 'flex-end' };
+                                element.style.justifyContent = justifyMapping[alignValue] || 'flex-start';
+                                
+                                const textEls = element.querySelectorAll('.largeText, .textCN, .textEN');
+                                textEls.forEach(el => { 
+                                    const parentComponent = el.closest('[data-feature]') || el.closest('.zone');
+                                    if (!parentComponent || !parentComponent.dataset.manualAlign) {
+                                        el.style.textAlign = alignValue; 
+                                    }
+                                });
+                                
+                                const compositeEls = element.querySelectorAll('.composite');
+                                compositeEls.forEach(compEl => {
+                                    const classes = compEl.className.split(/\s+/);
+                                    const compConfig = compositeComponents.find(c => classes.includes(c.id));
+                                    if (!compConfig) return;
+                                    if (compConfig.colorBarAdjustment) {
+                                        const colorBar = compEl.querySelector('.colorBar');
+                                        if (colorBar) colorBar.style.order = (alignValue === 'right') ? '99' : '';
+                                    }
+                                    if (compConfig.invertOrder) {
+                                        compEl.style.flexDirection = (alignValue === 'right') ? 'row-reverse' : '';
+                                    }
+                                });
+                            };
+
+                            control.options.forEach(opt => {
+                                const btn = document.createElement('button');
+                                btn.className = 'optionBtn';
+                                btn.textContent = opt.name;
+                                if (opt.value === currentVal) btn.classList.add('active');
+                                btn.addEventListener('click', () => {
+                                    listEl.querySelectorAll('.optionBtn').forEach(b => b.classList.remove('active'));
+                                    btn.classList.add('active');
+                                    applyZoneAlignment(opt.value);
+                                });
+                                listEl.appendChild(btn);
+                            });
                         }
-                        if (compConfig.invertOrder) {
-                            compEl.style.flexDirection = (alignValue === 'right') ? 'row-reverse' : '';
-                        }
+                        group.appendChild(listEl);
                     });
-                };
-            
-                [{ value: 'left', label: '左' }, { value: 'center', label: '中' }, { value: 'right', label: '右' }].forEach(opt => {
-                    const btn = document.createElement('button');
-                    btn.className = 'optionBtn';
-                    btn.textContent = opt.label;
-                    if (opt.value === currentAlignVal) btn.classList.add('active');
-                    btn.addEventListener('click', () => {
-                        listEl.querySelectorAll('.optionBtn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        applyZoneAlignment(opt.value);
-                    });
-                    listEl.appendChild(btn);
-                });
-            
-                group.appendChild(listEl);
-                container.appendChild(group);
+                }
                 return;
             }
 
@@ -955,6 +1019,9 @@ function applyHorizontalStretch(element, ratio) {
 
                 const row = document.createElement('div');
                 row.className = 'controlRow';
+                if (control.id) {
+                    row.classList.add(control.id);
+                }
                 if (control.label) {
                     const labelEl = document.createElement('label');
                     labelEl.textContent = control.label;

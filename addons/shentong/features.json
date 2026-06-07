@@ -3,16 +3,19 @@
     "label": "编辑文本",
     "controls": [
       {
+        "id": "textNumber",
         "type": "text",
         "target": ".largeText",
         "label": "数字"
       },
       {
+        "id": "textCN",
         "type": "text",
         "target": ".textCN",
         "label": "中文"
       },
       {
+        "id": "textEN",
         "type": "text",
         "target": ".textEN",
         "label": "英文"
@@ -23,6 +26,7 @@
     "label": "旋转角度",
     "controls": [
       {
+        "id": "iconDirection",
         "type": "select",
         "target": ".icon",
         "label": "方向",
@@ -67,15 +71,18 @@
     "label": "线路设置",
     "controls": [
       {
+        "id": "lineDropdown",
         "type": "dropdown",
         "label": ""
       },
       {
+        "id": "lineCustomColor",
         "type": "color",
         "target": ".colorBar",
         "label": "自定义线路色"
       },
       {
+        "id": "lineNumber",
         "type": "text",
         "target": ".largeText",
         "label": "线路号"
@@ -86,6 +93,7 @@
     "label": "选择图标",
     "controls": [
       {
+        "id": "iconDropdown",
         "type": "dropdown",
         "target": "img"
       }
@@ -95,6 +103,7 @@
     "label": "颜色设置",
     "controls": [
       {
+        "id": "colorBarColor",
         "type": "color",
         "target": ".colorBar",
         "label": "色带颜色"
