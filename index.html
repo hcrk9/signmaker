@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="global.css">
     <link rel="shortcut icon" href="favicon.svg">
     <title>Sign Maker by Chitose.City</title>
+    <!-- Dynamic custom styles for sign styles -->
+    <style id="custom-sign-style"></style>
 </head>
 
 <body>
@@ -14,21 +16,159 @@
         <div class="logo">
             <img src="logo.svg" alt="Sign Maker by Chitose.City">
             <div class="info">
-                <a target="_blank" href="https://chitose.city"><img src="icon/ui/chitose.svg" alt=""></a>
-                <a target="_blank" href="https://github.com/hcrk9/signmaker/issues"><img src="icon/ui/feedback.svg" alt=""></a>
-                <a target="_blank" href="https://github.com/hcrk9/signmaker/"><img src="icon/ui/github.svg" alt=""></a>
-                <a><img src="icon/ui/settings.svg" alt=""></a>
+                <a target="_blank" href="https://chitose.city"><img src="icon/ui/chitose.svg" alt="Chitose.City"></a>
+                <a target="_blank" href="https://github.com/hcrk9/signmaker/"><img src="icon/ui/github.svg" alt="Github"></a>
+                <a id="savedFileBtn"><img src="icon/ui/saved_files.svg" alt="Saved File"></a>
+                <a id="settingsBtn"><img src="icon/ui/settings.svg" alt="Settings"></a>
             </div>
         </div>
         <div class="componentsPanel">
             <div id="categoriesList"></div>
             <div id="componentsList"></div>
         </div>
+        <div class="savedFilePanel">
+            <h2>已保存标牌</h2>
+            <div class="savedFileList">
+                <span id="noSavedFile">暂无已保存标牌</span>
+            </div>
+        </div>
+        <div class="settingsPanel">
+            <h2>设定 Settings</h2>
+            <div class="settingsWrapper">
+                <div class="settingsGroup">
+                    <h3>通用设定</h3>
+                    <div class="controlRow">
+                        <label>显示语言</label>
+                        <div class="optionListGrid">
+                            <button class="optionBtn">中文</button>
+                            <button class="optionBtn">English</button>
+                            <button class="optionBtn">日本語</button>
+                        </div>
+                    </div>
+                    <div class="controlRow">
+                        <label>页面配色</label>
+                        <div class="optionListGrid">
+                            <button class="optionBtn">跟随系统</button>
+                            <button class="optionBtn">亮色</button>
+                            <button class="optionBtn">暗色</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="settingsGroup">
+                    <h3>样式自定义</h3>
+                    <div class="stylePreviewWrapper">
+                        <div class="stylePreviewCanvas">
+                          <div class="enterZoneDemo">
+                            <div class="zone enter" data-category="enter">
+                              <img src="icon/arrows/leftup.svg">
+                              <div class="composite lineNumber"><div class="colorBar" style="background-color: #003DA6;"></div><span class="largeText">3</span><div class="textBox"><span class="textCN">号线</span><span class="textEN">Line 3</span></div></div>
+                            </div>
+                          </div>
+                          <div class="exitZoneDemo">
+                            <div class="zone exit" data-category="exit">
+                              <img src="icon/arrows/up.svg">
+                              <img src="icon/exit.svg" alt="EXIT" class="icon">
+                              <div class="textBox">
+                                <span class="textCN">出口</span>
+                                <span class="textEN">Exit</span>          
+                              </div>
+                            </div>
+                          </div>
+                          <div class="facilityZoneDemo">
+                            <div class="zone facility" data-category="facility">
+                              <div class="textBox" style="text-align: right;">
+                                <span class="textCN">楼梯</span>
+                                <span class="textEN">Stairs</span>          
+                              </div>
+                              <img src="icon/stairs.svg" alt="Stairs" class="icon">
+                              <img src="icon/arrows/rightup.svg" style="filter: brightness(0) invert(1) !important;">
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    <h4>字体·字重设定</h4>
+                    <div class="controlRow" id="largeTextPreference">
+                        <label>大号文本</label>
+                        <input type="text" name="" id="largeTextFont">
+                        <span>·</span>
+                        <input type="number" name="" id="largeTextWeight" min="100" max="900" step="100">
+                    </div>
+                    <div class="controlRow" id="medTextPreference">
+                        <label>中号文本</label>
+                        <input type="text" name="" id="medTextFont">
+                        <span>·</span>
+                        <input type="number" name="" id="medTextWeight" min="100" max="900" step="100">
+                    </div>
+                    <div class="controlRow" id="smallTextPreference">
+                        <label>小号文本</label>
+                        <input type="text" name="" id="smallTextFont">
+                        <span>·</span>
+                        <input type="number" name="" id="smallTextWeight" min="100" max="900" step="100">
+                    </div>               
+                    <span style="font-size: 14px;color: var(--text-control);">*从上到下分别对应图中数字、中文、西文的字体。</span>
+                    <h4>背景色·前景色设定</h4>
+                    <div class="controlRow" id="enterColorPreference">
+                        <label>进站区域</label>
+                        <input type="color" name="" id="enterZoneBgColor">
+                        <input type="text" id="enterZoneBgColorHex" placeholder="#ffffff" maxlength="7">
+                        <span>·</span>
+                        <input type="color" name="" id="enterZoneColor">
+                        <input type="text" id="enterZoneColorHex" placeholder="#000000" maxlength="7">
+                    </div>    
+                    <div class="controlRow" id="exitColorPreference">
+                        <label>出站区域</label>
+                        <input type="color" name="" id="exitZoneBgColor">
+                        <input type="text" id="exitZoneBgColorHex" placeholder="#FFD701" maxlength="7">
+                        <span>·</span>
+                        <input type="color" name="" id="exitZoneColor">
+                        <input type="text" id="exitZoneColorHex" placeholder="#000000" maxlength="7">
+                    </div>  
+                    <div class="controlRow" id="facilityColorPreference">
+                        <label>设施区域</label>
+                        <input type="color" name="" id="facilityZoneBgColor">
+                        <input type="text" id="facilityZoneBgColorHex" placeholder="#333F48" maxlength="7">
+                        <span>·</span>
+                        <input type="color" name="" id="facilityZoneColor">
+                        <input type="text" id="facilityZoneColorHex" placeholder="#ffffff" maxlength="7">
+                    </div>  
+                    <div class="controlRow" id="basicColorPreference">
+                        <label>基础区域</label>
+                        <input type="color" name="" id="basicZoneBgColor">
+                        <input type="text" id="basicZoneBgColorHex" placeholder="#ffffff" maxlength="7">
+                        <span>·</span>
+                        <input type="color" name="" id="basicZoneColor">
+                        <input type="text" id="basicZoneColorHex" placeholder="#000000" maxlength="7">
+                    </div>  
+                </div>
+            </div>
+            </div>
+        <div class="settingsBtnWrapper">
+            <button id="btnResetSettings">重置设定</button>
+            <div class="dot-divider-v"></div>
+            <button id="btnCancelSettings">取消修改</button>
+            <button id="btnSaveSettings">保存修改</button>
+        </div>
+        <span class="version">alpha release v20260607.1</span>
     </section>
 
     <section class="rightPanel">
+        <!-- Toast notification -->
+        <div id="saveToast" class="toast">保存成功</div>
+        
         <div class="canvasViewer">
             <div id="canvas">
+                <svg id="canvas-svg-border" width="100%" height="100%" preserveAspectRatio="none" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="svg-border-left" x1="0%" y1="0%" x2="0%" y2="100%"></linearGradient>
+                        <linearGradient id="svg-border-right" x1="0%" y1="0%" x2="0%" y2="100%"></linearGradient>
+                        <linearGradient id="svg-border-top" x1="0%" y1="0%" x2="100%" y2="0%"></linearGradient>
+                        <linearGradient id="svg-border-bottom" x1="0%" y1="0%" x2="100%" y2="0%"></linearGradient>
+                    </defs>
+                    <rect id="svg-rect-left" x="0" y="0" height="100%" fill="url(#svg-border-left)" />
+                    <rect id="svg-rect-right" x="0" y="0" height="100%" fill="url(#svg-border-right)" />
+                    <rect id="svg-rect-top" x="0" y="0" width="100%" fill="url(#svg-border-top)" />
+                    <rect id="svg-rect-bottom" x="0" y="0" width="100%" fill="url(#svg-border-bottom)" />
+                </svg>                
                 <!-- Hanger elements -->
                 <div class="hanger left-hanger" id="leftHanger">
                     <div class="fade-overlay" id="leftFade"></div>
@@ -71,7 +211,10 @@
         <div class="styleSettings">
             <div class="styleSetting" id="canvasSize">
                 <span>画布大小</span>
-                <select id="canvasSizeSelect"></select>
+                <div class="canvasSizeSelectWrapper">
+                    <select id="canvasSizeSelect"></select>
+                    <input type="number" id="canvasCustomWidthInput" step="10" style="display: none;" title="Unit: pixel / 单位：像素">
+                </div>
             </div>
             <div class="styleSetting" id="projectStyle">
                 <span>项目风格</span>
@@ -86,7 +229,15 @@
         <div class="projectInfo">
             <div class="projectTitle" id="projectTitle" contenteditable="true">未命名标牌</div>
             <div class="projectActions">
-                <button id="btnSave">保存</button>
+                <button id="btnClearAll">清空</button>
+                <span class="divider">·</span>
+                <div class="saveWrapper">
+                    <button id="btnSave">保存</button>
+                    <div class="saveDropdown" id="saveDropdown">
+                        <button id="btnSaveToFile">保存到本地</button>
+                        <button id="btnSaveToBrowser">保存到浏览器内</button>
+                    </div>
+                </div>
                 <span class="divider">·</span>
                 <div class="exportWrapper">
                     <button id="btnExport">导出</button>
@@ -103,6 +254,7 @@
         </div>
     </section>
 </body>
+
 <script>
     async function loadJSON(path) {
         const res = await fetch(path);
@@ -620,6 +772,10 @@
             parent.remove();
         }
 
+        deselectAll();
+    }
+
+    function deselectAll() {
         selectElement(null);
         const container = document.getElementById('featureControls');
         if (container) {
@@ -1061,12 +1217,17 @@ function applyHorizontalStretch(element, ratio) {
                     control.options.forEach(opt => {
                         const o = document.createElement('option');
                         o.value = opt.value; o.textContent = opt.name;
-                        if (targetEl.style.transform === opt.value) {
+                        // 优先读取 transform，如果没有则尝试读取 data-transform
+                        const currentTransform = targetEl.style.transform || targetEl.dataset.transform || '';
+                        if (currentTransform === opt.value) {
                             o.selected = true;
                         }
                         input.appendChild(o);
                     });
-                    input.addEventListener('change', () => { targetEl.style.transform = input.value; });
+                    input.addEventListener('change', () => { 
+                        targetEl.style.transform = input.value; 
+                        targetEl.dataset.transform = input.value;
+                    });
                 }
                 else if (control.type === 'dropdown') {
                     // 特殊处理：editText 中的对齐 dropdown
@@ -1076,6 +1237,7 @@ function applyHorizontalStretch(element, ratio) {
 
                         // 获取当前对齐状态（优先读取手动设置的状态）
                         const firstTextEl = element.querySelector('.largeText, .textCN, .textEN');
+                        // 优先读取手动设置的状态，其次读取实际样式
                         const currentAlignVal = element.dataset.manualAlign || 
                             (firstTextEl ? (firstTextEl.style.textAlign || 'left') : 'left');
 
@@ -1135,31 +1297,20 @@ function applyHorizontalStretch(element, ratio) {
                         input.className = 'optionListGrid';
 
                         if (isLineDropdown) {
+                            // 获取当前线路 ID（最可靠的匹配方式）
+                            let currentLineId = element.dataset.lineId;
+                            if (!currentLineId) {
+                                const colorBar = element.querySelector('.colorBar');
+                                if (colorBar) currentLineId = colorBar.dataset.lineId;
+                            }
+
                             presetLinesConfig.forEach(line => {
                                 const btn = document.createElement('button');
                                 btn.className = 'optionBtn';
                                 btn.textContent = `${line.number}${line.nameCN}`;
 
-                                // 确定用于比较颜色的目标
-                                let compareEl;
-                                if (element.classList.contains('zone')) {
-                                    // 区域级别：比较区域的 --current-line-bg
-                                    compareEl = element;
-                                } else {
-                                    // 组件级别：比较 .colorBar 的背景色
-                                    compareEl = element.querySelector('.colorBar');
-                                }
-                                
-                                if (compareEl) {
-                                    let currentColor;
-                                    if (compareEl.classList.contains('zone')) {
-                                        currentColor = compareEl.style.getPropertyValue('--current-line-bg').trim() || '#b0b0b0';
-                                    } else {
-                                        currentColor = compareEl.style.backgroundColor;
-                                    }
-                                    if (rgb2hex(currentColor) === rgb2hex(line.color)) {
-                                        btn.classList.add('active');
-                                    }
+                                if (currentLineId && line.id === currentLineId) {
+                                    btn.classList.add('active');
                                 }
 
                                 btn.addEventListener('click', () => {
@@ -1168,6 +1319,9 @@ function applyHorizontalStretch(element, ratio) {
 
                                     const isLineColorText = element.classList.contains('lineColorText') || element.closest('.lineColorText') || (element.classList.contains('zone') && element.querySelector('.lineColorText'));
 
+                                    // 记忆线路 ID，提高状态读取的可靠性
+                                    element.dataset.lineId = line.id;
+
                                     // 根据 element 类型决定操作目标
                                     if (element.classList.contains('zone')) {
                                         // 区域级别：直接设置区域背景色
@@ -1175,18 +1329,21 @@ function applyHorizontalStretch(element, ratio) {
                                     } else {
                                         // 组件级别：设置 .colorBar 的背景色
                                         const colorBar = element.querySelector('.colorBar');
-                                        if (colorBar) colorBar.style.backgroundColor = line.color;
+                                        if (colorBar) {
+                                            colorBar.style.backgroundColor = line.color;
+                                            colorBar.dataset.lineId = line.id; // 同时在色带上记录 ID
+                                        }
                                     }
 
                                     if (!isLineColorText) {
                                         const largeText = element.querySelector('.largeText');
-                                        if (largeText) largeText.textContent = line.number;
+                                        if (largeText && line.number) largeText.textContent = line.number;
 
                                         const textCN = element.querySelector('.textCN');
-                                        if (textCN) textCN.textContent = line.nameCN;
+                                        if (textCN && line.nameCN) textCN.textContent = line.nameCN;
 
                                         const textEN = element.querySelector('.textEN');
-                                        if (textEN) textEN.textContent = line.nameEN;
+                                        if (textEN && line.nameEN) textEN.textContent = line.nameEN;
                                     }
                                 });
                                 input.appendChild(btn);
@@ -1200,7 +1357,8 @@ function applyHorizontalStretch(element, ratio) {
                             }
 
                             const targetImg = targetEl || element.querySelector('img');
-                            const currentSrc = targetImg ? (targetImg.getAttribute('src') || targetImg.src || '') : '';
+                            // 优先读取 src，如果没有则尝试读取 data-src
+                            const currentSrc = targetImg ? (targetImg.getAttribute('src') || targetImg.dataset.src || targetImg.src || '') : '';
 
                             iconFiles.forEach((filePath, idx) => {
                                 const btn = document.createElement('button');
@@ -1228,6 +1386,7 @@ function applyHorizontalStretch(element, ratio) {
 
                                     if (targetImg) {
                                         targetImg.src = resolvedPath;
+                                        targetImg.dataset.src = resolvedPath; // 记忆状态
                                     }
                                 });
                                 input.appendChild(btn);
@@ -1242,10 +1401,22 @@ function applyHorizontalStretch(element, ratio) {
                             defaultOption.textContent = '选择线路...';
                             input.appendChild(defaultOption);
 
+                            // 获取当前线路 ID（最可靠的匹配方式）
+                            let currentLineId = element.dataset.lineId;
+                            if (!currentLineId) {
+                                const colorBar = element.querySelector('.colorBar');
+                                if (colorBar) currentLineId = colorBar.dataset.lineId;
+                            }
+
                             presetLinesConfig.forEach(line => {
                                 const option = document.createElement('option');
                                 option.value = JSON.stringify(line);
                                 option.textContent = `${line.number}${line.nameCN}`;
+                                
+                                if (currentLineId && line.id === currentLineId) {
+                                    option.selected = true;
+                                }
+                                
                                 input.appendChild(option);
                             });
 
@@ -1255,6 +1426,9 @@ function applyHorizontalStretch(element, ratio) {
 
                                 const isLineColorText = element.classList.contains('lineColorText') || element.closest('.lineColorText') || (element.classList.contains('zone') && element.querySelector('.lineColorText'));
 
+                                // 记忆线路 ID，提高状态读取的可靠性
+                                element.dataset.lineId = line.id;
+
                                 // 根据 element 类型决定操作目标
                                 if (element.classList.contains('zone')) {
                                     // 区域级别：直接设置区域背景色
@@ -1262,7 +1436,10 @@ function applyHorizontalStretch(element, ratio) {
                                 } else {
                                     // 组件级别：设置 .colorBar 的背景色
                                     const colorBar = element.querySelector('.colorBar');
-                                    if (colorBar) colorBar.style.backgroundColor = line.color;
+                                    if (colorBar) {
+                                        colorBar.style.backgroundColor = line.color;
+                                        colorBar.dataset.lineId = line.id; // 同时在色带上记录 ID
+                                    }
                                 }
 
                                 if (!isLineColorText) {
@@ -1290,7 +1467,8 @@ function applyHorizontalStretch(element, ratio) {
                             }
 
                             const targetImg = targetEl || element.querySelector('img');
-                            const currentSrc = targetImg ? (targetImg.getAttribute('src') || targetImg.src || '') : '';
+                            // 优先读取 src，如果没有则尝试读取 data-src
+                            const currentSrc = targetImg ? (targetImg.getAttribute('src') || targetImg.dataset.src || targetImg.src || '') : '';
 
                             let matched = false;
                             iconFiles.forEach((filePath, idx) => {
@@ -1324,20 +1502,22 @@ function applyHorizontalStretch(element, ratio) {
                                 const fullPath = e.target.value;
                                 if (targetImg) {
                                     targetImg.src = fullPath;
+                                    targetImg.dataset.src = fullPath; // 记忆状态
                                 }
                             });
                         } else if (isFacilityDropdown) {
                             // Facility dropdown logic
                             const facilities = presetFacilitiesConfig;
-                            
+                                                        
                             if (useList) {
                                 input = document.createElement('div');
                                 input.className = 'optionListGrid';
-
+                        
                                 const targetImg = targetEl || element.querySelector('img');
                                 const targetTextCN = element.querySelector('.textCN');
                                 const targetTextEN = element.querySelector('.textEN');
-                                const currentSrc = targetImg ? (targetImg.getAttribute('src') || targetImg.src || '') : '';
+                                // 优先读取 src，如果没有则尝试读取 data-src
+                                const currentSrc = targetImg ? (targetImg.getAttribute('src') || targetImg.dataset.src || targetImg.src || '') : '';
 
                                 facilities.forEach(facility => {
                                     const btn = document.createElement('button');
@@ -1362,6 +1542,7 @@ function applyHorizontalStretch(element, ratio) {
 
                                         if (targetImg) {
                                             targetImg.src = resolvedPath;
+                                            targetImg.dataset.src = resolvedPath; // 记忆状态
                                         }
                                         if (targetTextCN) {
                                             targetTextCN.textContent = facility.nameCN;
@@ -1383,7 +1564,8 @@ function applyHorizontalStretch(element, ratio) {
                                 const targetImg = targetEl || element.querySelector('img');
                                 const targetTextCN = element.querySelector('.textCN');
                                 const targetTextEN = element.querySelector('.textEN');
-                                const currentSrc = targetImg ? (targetImg.getAttribute('src') || targetImg.src || '') : '';
+                                // 优先读取 src，如果没有则尝试读取 data-src
+                                const currentSrc = targetImg ? (targetImg.getAttribute('src') || targetImg.dataset.src || targetImg.src || '') : '';
 
                                 let matched = false;
                                 facilities.forEach(facility => {
@@ -1417,6 +1599,7 @@ function applyHorizontalStretch(element, ratio) {
 
                                     if (targetImg) {
                                         targetImg.src = fullPath;
+                                        targetImg.dataset.src = fullPath; // 记忆状态
                                     }
                                     if (targetTextCN) {
                                         targetTextCN.textContent = selectedOption.textContent;
@@ -1476,6 +1659,10 @@ function applyHorizontalStretch(element, ratio) {
             if (canvasSizeSelect) {
                 canvasSizeSelect.addEventListener('change', handleCanvasSizeChange);
             }
+            const customWidthInput = document.getElementById('canvasCustomWidthInput');
+            if (customWidthInput) {
+                customWidthInput.addEventListener('input', handleCustomWidthInputChange);
+            }
             const signStyleSelect = document.getElementById('signStyleSelect');
             if (signStyleSelect) {
                 signStyleSelect.addEventListener('change', handleSignStyleChange);
@@ -1510,6 +1697,8 @@ function applyHorizontalStretch(element, ratio) {
                 });
                 projectStyleSelect.addEventListener('change', handleProjectStyleChange);
             }
+
+            initSvgBorder();
 
             // Apply default style pack
             await loadStylePack('default');
@@ -1552,27 +1741,11 @@ function applyHorizontalStretch(element, ratio) {
             compositeComponents = defaultData.components || [];
             signsConfig = signsData;
 
-            // Populate canvas sizes dropdown based on the newly loaded signsConfig
+            // Populate canvas sizes dropdown based on the currently selected sign style
             const canvasSizeSelect = document.getElementById('canvasSizeSelect');
-            if (canvasSizeSelect) {
-                const currentVal = canvasSizeSelect.value;
-                canvasSizeSelect.innerHTML = '';
-                signsConfig.canvasWidths.forEach(opt => {
-                    const o = document.createElement('option');
-                    o.value = opt.value;
-                    o.textContent = opt.name;
-                    canvasSizeSelect.appendChild(o);
-                });
-                // Try to restore previous value, or fall back to first option
-                if (Array.from(canvasSizeSelect.options).some(o => o.value === currentVal)) {
-                    canvasSizeSelect.value = currentVal;
-                } else {
-                    canvasSizeSelect.value = signsConfig.canvasWidths[0]?.value || 'auto';
-                }
-            }
-
-            // Populate sign styles dropdown
             const signStyleSelect = document.getElementById('signStyleSelect');
+            
+            // First populate sign styles dropdown
             if (signStyleSelect) {
                 const currentVal = signStyleSelect.value;
                 signStyleSelect.innerHTML = '';
@@ -1588,9 +1761,46 @@ function applyHorizontalStretch(element, ratio) {
                 } else {
                     const defaultStyleId = signsConfig.signStyles[0]?.id || '';
                     signStyleSelect.value = defaultStyleId;
-                    if (defaultStyleId) {
-                        handleSignStyleChange({ target: { value: defaultStyleId } });
-                    }
+                }
+                // Apply initial sign style (border, canvas height, canvas widths, custom CSS)
+                handleSignStyleChange({ target: signStyleSelect });
+            }
+            
+            // Now populate canvas widths based on the selected sign style
+            const selectedStyleId = signStyleSelect ? signStyleSelect.value : (signsConfig.signStyles[0]?.id || '');
+            const selectedStyle = signsConfig.signStyles.find(s => s.id === selectedStyleId);
+            
+            if (canvasSizeSelect && selectedStyle) {
+                const currentVal = canvasSizeSelect.value;
+                canvasSizeSelect.innerHTML = '';
+                
+                // Add "auto" option as first option (hardcoded)
+                const autoOption = document.createElement('option');
+                autoOption.value = 'auto';
+                autoOption.textContent = '自适应';
+                canvasSizeSelect.appendChild(autoOption);
+                
+                // Add "custom" option as second option (hardcoded)
+                const customOption = document.createElement('option');
+                customOption.value = 'custom';
+                customOption.textContent = '自定义';
+                canvasSizeSelect.appendChild(customOption);
+                
+                // Add preset options from sign style config
+                if (selectedStyle.canvasWidths && selectedStyle.canvasWidths.length > 0) {
+                    selectedStyle.canvasWidths.forEach(opt => {
+                        const o = document.createElement('option');
+                        o.value = opt.value;
+                        o.textContent = opt.name;
+                        canvasSizeSelect.appendChild(o);
+                    });
+                }
+                
+                // Try to restore previous value, or fall back to 'auto'
+                if (Array.from(canvasSizeSelect.options).some(o => o.value === currentVal)) {
+                    canvasSizeSelect.value = currentVal;
+                } else {
+                    canvasSizeSelect.value = 'auto';
                 }
             }
 
@@ -1631,15 +1841,7 @@ function applyHorizontalStretch(element, ratio) {
             updateUI();
 
             // Clear property panel
-            selectElement(null);
-            const container = document.getElementById('featureControls');
-            if (container) {
-                container.innerHTML = '<span style="color: #5b5b5b;text-align: center;">未选中组件</span>';
-            }
-            const panelTitle = document.getElementById('propertyPanelTitle');
-            if (panelTitle) {
-                panelTitle.textContent = '属性面板';
-            }
+            deselectAll();
 
         } catch (error) {
             console.error(`Failed to load style pack: ${addonId}`, error);
@@ -1650,17 +1852,99 @@ function applyHorizontalStretch(element, ratio) {
     function handleCanvasSizeChange(e) {
         const val = e.target.value;
         const canvas = document.getElementById('canvas');
+        const customWidthInput = document.getElementById('canvasCustomWidthInput');
+        const canvasSizeSelect = document.getElementById('canvasSizeSelect');
         if (!canvas) return;
 
-        if (val === 'auto') {
-            canvas.style.width = 'auto';
-            canvas.querySelectorAll('.zone').forEach(z => {
-                z.style.flex = 'none';
-            });
+        if (val === 'custom') {
+            // Show custom width input and set current canvas width as default
+            if (customWidthInput) {
+                customWidthInput.style.display = 'block';
+                customWidthInput.value = canvas.offsetWidth;
+            }
+            // Narrow the select when custom is selected
+            if (canvasSizeSelect) {
+                canvasSizeSelect.style.width = '85px';
+            }
+            // Apply custom width
+            applyCustomCanvasWidth(canvas, customWidthInput ? parseInt(customWidthInput.value) : canvas.offsetWidth);
         } else {
-            canvas.style.width = `${val}px`;
+            // Hide custom width input
+            if (customWidthInput) {
+                customWidthInput.style.display = 'none';
+            }
+            // Restore select width
+            if (canvasSizeSelect) {
+                canvasSizeSelect.style.width = '180px';
+            }
+            
+            if (val === 'auto') {
+                canvas.style.width = 'auto';
+                canvas.querySelectorAll('.zone').forEach(z => {
+                    z.style.flex = 'none';
+                });
+            } else {
+                canvas.style.width = `${val}px`;
+            }
         }
 
+        if (selectedElement && selectedElement.classList.contains('zone')) {
+            openPropertyPanel(selectedElement);
+        }
+    }
+
+    function applyCustomCanvasWidth(canvas, width) {
+        if (!canvas || !width || width <= 0) return;
+        canvas.style.width = `${width}px`;
+    }
+
+    function updateCanvasWidthOptionsForStyle(style) {
+        const canvasSizeSelect = document.getElementById('canvasSizeSelect');
+        if (!canvasSizeSelect || !style) return;
+        
+        const currentVal = canvasSizeSelect.value;
+        canvasSizeSelect.innerHTML = '';
+        
+        // Add "auto" option as first option (hardcoded)
+        const autoOption = document.createElement('option');
+        autoOption.value = 'auto';
+        autoOption.textContent = '自适应';
+        canvasSizeSelect.appendChild(autoOption);
+        
+        // Add "custom" option as second option (hardcoded)
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = '自定义';
+        canvasSizeSelect.appendChild(customOption);
+        
+        // Add preset options from sign style config
+        if (style.canvasWidths && style.canvasWidths.length > 0) {
+            style.canvasWidths.forEach(opt => {
+                const o = document.createElement('option');
+                o.value = opt.value;
+                o.textContent = opt.name;
+                canvasSizeSelect.appendChild(o);
+            });
+        }
+        
+        // Try to restore previous value if it exists in the new options, or fall back to 'auto'
+        if (Array.from(canvasSizeSelect.options).some(o => o.value === currentVal)) {
+            canvasSizeSelect.value = currentVal;
+        } else {
+            canvasSizeSelect.value = 'auto';
+        }
+    }
+
+    function handleCustomWidthInputChange(e) {
+        const canvas = document.getElementById('canvas');
+        const customWidthInput = document.getElementById('canvasCustomWidthInput');
+        if (!canvas || !customWidthInput) return;
+        
+        const width = parseInt(customWidthInput.value);
+        if (width && width > 0) {
+            applyCustomCanvasWidth(canvas, width);
+        }
+        
         if (selectedElement && selectedElement.classList.contains('zone')) {
             openPropertyPanel(selectedElement);
         }
@@ -1674,6 +1958,14 @@ function applyHorizontalStretch(element, ratio) {
         const canvas = document.getElementById('canvas');
         if (!canvas) return;
 
+        // Update canvas width options based on the selected sign style
+        updateCanvasWidthOptionsForStyle(style);
+
+        // Apply canvas height
+        if (style.canvasHeight) {
+            canvas.style.setProperty('--canvas-height', style.canvasHeight);
+        }
+
         // Set standard borders but make them transparent so they preserve the layout box sizing
         canvas.style.borderWidth = style.borderWidth || '0';
         canvas.style.borderStyle = style.borderStyle || 'none';
@@ -1682,7 +1974,58 @@ function applyHorizontalStretch(element, ratio) {
         // Apply border styles using CSS variables so canvas::after pseudo-element can render it
         canvas.style.setProperty('--canvas-border-width', style.borderWidth || '0');
         canvas.style.setProperty('--canvas-border-style', style.borderStyle || 'none');
-        canvas.style.setProperty('--canvas-border-color', style.borderColor || 'transparent');
+        
+        // Parse borderColor: supports string (uniform) or object { top, right, bottom, left }
+        const rawBorderColor = style.borderColor || 'transparent';
+        let borderColorTop, borderColorRight, borderColorBottom, borderColorLeft;
+        if (typeof rawBorderColor === 'object' && rawBorderColor !== null) {
+            borderColorTop    = rawBorderColor.top    || rawBorderColor.default || 'transparent';
+            borderColorRight  = rawBorderColor.right  || rawBorderColor.default || 'transparent';
+            borderColorBottom = rawBorderColor.bottom || rawBorderColor.default || 'transparent';
+            borderColorLeft   = rawBorderColor.left   || rawBorderColor.default || 'transparent';
+        } else {
+            borderColorTop = borderColorRight = borderColorBottom = borderColorLeft = rawBorderColor;
+        }
+        const perDirectionColors = [borderColorTop, borderColorRight, borderColorBottom, borderColorLeft];
+        const hasAnyGradient = perDirectionColors.some(c => c.includes('linear-gradient') || c.includes('radial-gradient'));
+        const allSolid = !hasAnyGradient;
+
+        if (allSolid) {
+            // All four sides are solid colors → use traditional border-color
+            canvas.style.setProperty('--canvas-border-color', borderColorTop);
+            // Clear all per-direction gradient/mask variables
+            ['top', 'right', 'bottom', 'left'].forEach(dir => {
+                canvas.style.removeProperty(`--canvas-border-gradient-${dir}`);
+                canvas.style.removeProperty(`--canvas-border-mask-${dir}`);
+            });
+        } else {
+            // At least one direction uses a gradient → use 4-layer background + mask approach
+            canvas.style.setProperty('--canvas-border-color', 'transparent');
+            
+            // Set gradient for each direction
+            canvas.style.setProperty('--canvas-border-gradient-top', borderColorTop);
+            canvas.style.setProperty('--canvas-border-gradient-right', borderColorRight);
+            canvas.style.setProperty('--canvas-border-gradient-bottom', borderColorBottom);
+            canvas.style.setProperty('--canvas-border-gradient-left', borderColorLeft);
+            
+            // Set background size and position to restrict each gradient to its own border area
+            // Format: background-size: width height; background-position: x y;
+            // Top border: full width, top height, positioned at top
+            canvas.style.setProperty('--canvas-border-bg-size-top', `100% var(--canvas-border-width-top)`);
+            canvas.style.setProperty('--canvas-border-bg-pos-top', '0 0');
+            
+            // Right border: right width, full height, positioned at right
+            canvas.style.setProperty('--canvas-border-bg-size-right', `var(--canvas-border-width-right) 100%`);
+            canvas.style.setProperty('--canvas-border-bg-pos-right', '100% 0');
+            
+            // Bottom border: full width, bottom height, positioned at bottom
+            canvas.style.setProperty('--canvas-border-bg-size-bottom', `100% var(--canvas-border-width-bottom)`);
+            canvas.style.setProperty('--canvas-border-bg-pos-bottom', '0 100%');
+            
+            // Left border: left width, full height, positioned at left
+            canvas.style.setProperty('--canvas-border-bg-size-left', `var(--canvas-border-width-left) 100%`);
+            canvas.style.setProperty('--canvas-border-bg-pos-left', '0 0');
+        }
 
         // Extract individual border widths to position canvas::after correctly outside the padding box
         const parts = (style.borderWidth || '0').trim().split(/\s+/);
@@ -1708,6 +2051,18 @@ function applyHorizontalStretch(element, ratio) {
         canvas.style.setProperty('--canvas-border-width-bottom', bottom);
         canvas.style.setProperty('--canvas-border-width-left', left);
 
+        // If any direction uses a gradient, construct per-direction mask-image
+        if (hasAnyGradient) {
+            canvas.style.setProperty('--canvas-border-mask-top',
+                'linear-gradient(to bottom, black var(--canvas-border-width-top), transparent var(--canvas-border-width-top))');
+            canvas.style.setProperty('--canvas-border-mask-bottom',
+                'linear-gradient(to top, black var(--canvas-border-width-bottom), transparent var(--canvas-border-width-bottom))');
+            canvas.style.setProperty('--canvas-border-mask-left',
+                'linear-gradient(to right, black var(--canvas-border-width-left), transparent var(--canvas-border-width-left))');
+            canvas.style.setProperty('--canvas-border-mask-right',
+                'linear-gradient(to left, black var(--canvas-border-width-right), transparent var(--canvas-border-width-right))');
+        }
+
         if (style.hanger) {
             canvas.style.setProperty('--hanger-width', `${style.hanger.width}px`);
             canvas.style.setProperty('--hanger-height', `${style.hanger.height}px`);
@@ -1718,6 +2073,12 @@ function applyHorizontalStretch(element, ratio) {
             canvas.classList.add('has-mask');
         } else {
             canvas.classList.remove('has-mask');
+        }
+
+        // Apply custom CSS if defined
+        const customStyleEl = document.getElementById('custom-sign-style');
+        if (customStyleEl) {
+            customStyleEl.textContent = style.customCSS || '';
         }
     }
 
@@ -1863,7 +2224,7 @@ function applyHorizontalStretch(element, ratio) {
             canvas.appendChild(zone);
         });
 
-        selectElement(null);
+        deselectAll();
     }
 
     function saveCanvasToFile() {
@@ -1875,6 +2236,171 @@ function applyHorizontalStretch(element, ratio) {
         a.download = `${data.projectName}.json`;
         a.click();
         URL.revokeObjectURL(url);
+    }
+    
+    function saveCanvasToBrowser() {
+        const data = serializeCanvas();
+        const savedFiles = getSavedFiles();
+        
+        const newFile = {
+            id: Date.now().toString(),
+            name: data.projectName || '未命名标牌',
+            timestamp: Date.now(),
+            data: data
+        };
+        
+        savedFiles.unshift(newFile);
+        
+        // Keep only last 50 files to avoid localStorage overflow
+        if (savedFiles.length > 50) {
+            savedFiles.pop();
+        }
+        
+        localStorage.setItem('signmaker_saved_files', JSON.stringify(savedFiles));
+        
+        // Show toast notification
+        showToast(`保存成功！${newFile.name}`);
+    }
+    
+    function showToast(message) {
+        const toast = document.getElementById('saveToast');
+        if (!toast) return;
+        
+        toast.textContent = message;
+        toast.classList.add('show');
+        
+        // Hide after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+    
+    function getSavedFiles() {
+        const stored = localStorage.getItem('signmaker_saved_files');
+        return stored ? JSON.parse(stored) : [];
+    }
+    
+    function renderSavedFilesList() {
+        const savedFileList = document.querySelector('.savedFileList');
+        if (!savedFileList) return;
+        
+        const savedFiles = getSavedFiles();
+        
+        // Clear existing content except the no-saved-file message
+        const noSavedFileMsg = document.getElementById('noSavedFile');
+        savedFileList.innerHTML = '';
+        savedFileList.appendChild(noSavedFileMsg);
+        
+        if (savedFiles.length === 0) {
+            noSavedFileMsg.style.display = 'block';
+        } else {
+            noSavedFileMsg.style.display = 'none';
+            
+            savedFiles.forEach(file => {
+                const card = createSavedFileCard(file);
+                savedFileList.appendChild(card);
+            });
+        }
+    }
+    
+    function createSavedFileCard(file) {
+        const card = document.createElement('div');
+        card.className = 'savedFileCard';
+        card.dataset.fileId = file.id;
+        
+        const date = new Date(file.timestamp);
+        const dateTimeStr = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+        
+        card.innerHTML = `
+            <span class="savedFileTitle">${file.name}</span>
+            <div class="savedFileInfo">
+                <span class="savedFileDateTime">${dateTimeStr}</span>
+                <span class="divider">·</span>
+                <button class="savedFileOpenBtn">打开</button>
+                <span class="divider">·</span>
+                <button class="savedFileDeleteBtn">删除</button>
+            </div>
+        `;
+        
+        // Bind open button
+        const openBtn = card.querySelector('.savedFileOpenBtn');
+        openBtn.addEventListener('click', () => {
+            loadCanvasFromBrowser(file.id);
+        });
+        
+        // Bind delete button
+        const deleteBtn = card.querySelector('.savedFileDeleteBtn');
+        deleteBtn.addEventListener('click', () => {
+            if (confirm(`确定要删除标牌“${file.name}”吗？`)) {
+                deleteSavedFile(file.id);
+            }
+        });
+        
+        return card;
+    }
+    
+    function loadCanvasFromBrowser(fileId) {
+        const savedFiles = getSavedFiles();
+        const file = savedFiles.find(f => f.id === fileId);
+        
+        if (!file) {
+            alert('找不到该标牌数据！');
+            return;
+        }
+        
+        if (confirm(`确定要打开标牌“${file.name}”吗？\n当前画布的内容将会被替换。`)) {
+            deserializeCanvas(file.data);
+            
+            // Close saved file panel and show components panel
+            const savedFilePanel = document.querySelector('.savedFilePanel');
+            const componentsPanel = document.querySelector('.componentsPanel');
+            const settingsPanel = document.querySelector('.settingsPanel');
+            const savedFileBtn = document.getElementById('savedFileBtn');
+            const settingsBtn = document.getElementById('settingsBtn');
+            
+            if (savedFilePanel) savedFilePanel.classList.remove('active');
+            if (componentsPanel) componentsPanel.classList.remove('hidden');
+            if (savedFileBtn) savedFileBtn.classList.remove('active');
+            if (settingsPanel) settingsPanel.classList.remove('active');
+            if (settingsBtn) settingsBtn.classList.remove('active');
+        }
+    }
+    
+    function deleteSavedFile(fileId) {
+        let savedFiles = getSavedFiles();
+        savedFiles = savedFiles.filter(f => f.id !== fileId);
+        localStorage.setItem('signmaker_saved_files', JSON.stringify(savedFiles));
+        renderSavedFilesList();
+    }
+    
+    function clearCanvas() {
+        const canvas = document.getElementById('canvas');
+        if (!canvas) return;
+        
+        // Remove all child elements except hangers and lighting overlay
+        const children = Array.from(canvas.children);
+        children.forEach(child => {
+            // Keep hanger elements and lighting overlay
+            if (!child.classList.contains('hanger') && 
+                !child.classList.contains('lighting-overlay') &&
+                !child.classList.contains('insert-line')) {
+                child.remove();
+            }
+        });
+        
+        // Clear selection and reset property panel
+        deselectAll();
+        
+        // Disable quick action buttons
+        const btnDuplicate = document.getElementById('btnDuplicate');
+        const btnDelete = document.getElementById('btnDelete');
+        const btnLeft = document.getElementById('btnLeft');
+        const btnRight = document.getElementById('btnRight');
+        
+        if (btnDuplicate) btnDuplicate.disabled = true;
+        if (btnDelete) btnDelete.disabled = true;
+        if (btnLeft) btnLeft.disabled = true;
+        if (btnRight) btnRight.disabled = true;
     }
 
     // Inlining images & background images to base64 for standalone SVG & PNG exports
@@ -2299,15 +2825,7 @@ function applyHorizontalStretch(element, ratio) {
 
         canvas.addEventListener('click', (e) => {
             if (e.target === canvas) {
-                selectElement(null);
-                const container = document.getElementById('featureControls');
-                if (container) {
-                    container.innerHTML = '<span style="color: #5b5b5b;text-align: center;">未选中组件</span>';
-                }
-                const panelTitle = document.getElementById('propertyPanelTitle');
-                if (panelTitle) {
-                    panelTitle.textContent = '属性面板';
-                }
+                deselectAll();
             }
         });
     });
@@ -2351,6 +2869,18 @@ function applyHorizontalStretch(element, ratio) {
         if (btnLeft) btnLeft.addEventListener('click', () => moveSelectedElement('left'));
         if (btnRight) btnRight.addEventListener('click', () => moveSelectedElement('right'));
 
+        // 点击画布外空白区域取消选中
+        const canvasViewer = document.querySelector('.canvasViewer');
+        const canvas = document.getElementById('canvas');
+        if (canvasViewer && canvas) {
+            canvasViewer.addEventListener('click', (e) => {
+                // 如果点击目标是 canvasViewer 本身（即空白区域），而不是 canvas 或其子元素
+                if (e.target === canvasViewer) {
+                    deselectAll();
+                }
+            });
+        }
+
         const btnZoomOut = document.getElementById('btnZoomOut');
         const btnZoomIn = document.getElementById('btnZoomIn');
         if (btnZoomOut && btnZoomIn) {
@@ -2385,7 +2915,48 @@ function applyHorizontalStretch(element, ratio) {
         if (btnExportSVG) btnExportSVG.addEventListener('click', exportToSVG);
 
         const btnSave = document.getElementById('btnSave');
-        if (btnSave) btnSave.addEventListener('click', saveCanvasToFile);
+        const saveDropdown = document.getElementById('saveDropdown');
+        const btnSaveToFile = document.getElementById('btnSaveToFile');
+        const btnSaveToBrowser = document.getElementById('btnSaveToBrowser');
+        
+        if (btnSave && saveDropdown) {
+            btnSave.addEventListener('click', (e) => {
+                e.stopPropagation();
+                saveDropdown.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', () => {
+                saveDropdown.classList.remove('show');
+            });
+            
+            saveDropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        if (btnSaveToFile) {
+            btnSaveToFile.addEventListener('click', () => {
+                saveCanvasToFile();
+                saveDropdown.classList.remove('show');
+            });
+        }
+        
+        if (btnSaveToBrowser) {
+            btnSaveToBrowser.addEventListener('click', () => {
+                saveCanvasToBrowser();
+                saveDropdown.classList.remove('show');
+            });
+        }
+        
+        // Clear all binding
+        const btnClearAll = document.getElementById('btnClearAll');
+        if (btnClearAll) {
+            btnClearAll.addEventListener('click', () => {
+                if (confirm('确定要清空画布所有内容吗？\n此操作不可撤销。')) {
+                    clearCanvas();
+                }
+            });
+        }
 
         // Import binding
         const btnImport = document.getElementById('btnImport');
@@ -2437,7 +3008,488 @@ function applyHorizontalStretch(element, ratio) {
         if (btnEffectFade) btnEffectFade.addEventListener('click', () => toggleEffect('fade'));
     });
 
-    // Initialize all configs and default state
+    // Unified Panel Management Logic
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedFileBtn = document.getElementById('savedFileBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const savedFilePanel = document.querySelector('.savedFilePanel');
+        const componentsPanel = document.querySelector('.componentsPanel');
+        const settingsPanel = document.querySelector('.settingsPanel');
+        const settingsBtnWrapper = document.querySelector('.settingsBtnWrapper');
+        
+        if (!savedFileBtn || !settingsBtn || !savedFilePanel || !componentsPanel) return;
+        
+        // Helper to hide all panels and reset buttons
+        function hideAllPanels() {
+            savedFilePanel.classList.remove('active');
+            if (settingsPanel) settingsPanel.classList.remove('active');
+            componentsPanel.classList.add('hidden');
+            if (settingsBtnWrapper) settingsBtnWrapper.classList.remove('active');
+            savedFileBtn.classList.remove('active');
+            settingsBtn.classList.remove('active');
+        }
+
+        // Toggle saved file panel
+        savedFileBtn.addEventListener('click', () => {
+            const isActive = savedFilePanel.classList.contains('active');
+            hideAllPanels();
+            
+            if (!isActive) {
+                savedFilePanel.classList.add('active');
+                savedFileBtn.classList.add('active');
+                renderSavedFilesList();
+            } else {
+                // If it was active, we just closed it. Show components.
+                componentsPanel.classList.remove('hidden');
+            }
+        });
+
+        // Toggle settings panel
+        settingsBtn.addEventListener('click', () => {
+            const isActive = settingsPanel.classList.contains('active');
+            hideAllPanels();
+            
+            if (!isActive) {
+                settingsPanel.classList.add('active');
+                settingsBtn.classList.add('active');
+                if (settingsBtnWrapper) settingsBtnWrapper.classList.add('active');
+                
+                // Initialize preview
+                initializePreview();
+                loadCurrentStylesToInputs();
+            } else {
+                // If it was active, we just closed it. Show components.
+                componentsPanel.classList.remove('hidden');
+            }
+        });
+
+        // Settings Panel Buttons Logic
+        const btnCancelSettings = document.getElementById('btnCancelSettings');
+        const btnSaveSettings = document.getElementById('btnSaveSettings');
+        const btnResetSettings = document.getElementById('btnResetSettings');
+        let savedSettings = null;
+        
+        // Default styles (initial state)
+        const defaultStyles = {
+            largeTextFont: 'Noto Sans',
+            largeTextWeight: '500',
+            medTextFont: 'IBM Plex Sans SC',
+            medTextWeight: '400',
+            smallTextFont: 'Geist',
+            smallTextWeight: '400',
+            enterBgColor: '#ffffff',
+            enterColor: '#000000',
+            exitBgColor: '#FFD701',
+            exitColor: '#000000',
+            facilityBgColor: '#333F48',
+            facilityColor: '#ffffff',
+            basicBgColor: '#ffffff',
+            basicColor: '#000000'
+        };
+
+        // Cancel button
+        if (btnCancelSettings) {
+            btnCancelSettings.addEventListener('click', () => {
+                hideAllPanels();
+                componentsPanel.classList.remove('hidden');
+                
+                // Restore saved styles if any
+                if (savedSettings) {
+                    applyCustomStyles(savedSettings);
+                }
+            });
+        }
+        
+        // Save button
+        if (btnSaveSettings) {
+            btnSaveSettings.addEventListener('click', () => {
+                // Get current settings from inputs
+                const newSettings = getSettingsFromInputs();
+                
+                // Apply to main canvas
+                applyCustomStyles(newSettings);
+                
+                // Save to localStorage
+                localStorage.setItem('customStyles', JSON.stringify(newSettings));
+                
+                hideAllPanels();
+                componentsPanel.classList.remove('hidden');
+                
+                // Update saved state
+                savedSettings = newSettings;
+            });
+        }
+        
+        // Reset button
+        if (btnResetSettings) {
+            btnResetSettings.addEventListener('click', () => {
+                // Confirm reset
+                if (confirm('确定要重置所有样式设定到初始状态吗？\n此操作将清除所有自定义设置。')) {
+                    // Apply default styles
+                    applyCustomStyles(defaultStyles);
+                    
+                    // Update inputs to show default values
+                    loadSettingsToInputs(defaultStyles);
+                    
+                    // Update preview
+                    updatePreviewFromInputs();
+                    
+                    // Clear localStorage
+                    localStorage.removeItem('customStyles');
+                    
+                    // Update saved state
+                    savedSettings = defaultStyles;
+                }
+            });
+        }
+        
+        // Preview update listeners
+        setupPreviewListeners();
+        
+        // Load saved styles on startup
+        loadSavedStyles();
+    });
+    
+    function getCurrentCustomStyles() {
+        const canvas = document.getElementById('canvas');
+        if (!canvas) return null;
+        
+        return {
+            largeTextFont: canvas.style.getPropertyValue('--large-text-font') || 'Noto Sans',
+            largeTextWeight: canvas.style.getPropertyValue('--large-text-weight') || '500',
+            medTextFont: canvas.style.getPropertyValue('--med-text-font') || 'IBM Plex Sans SC',
+            medTextWeight: canvas.style.getPropertyValue('--med-text-weight') || '400',
+            smallTextFont: canvas.style.getPropertyValue('--small-text-font') || 'Geist',
+            smallTextWeight: canvas.style.getPropertyValue('--small-text-weight') || '400',
+            enterBgColor: getComputedStyle(document.documentElement).getPropertyValue('--enter-bg-color').trim() || '#ffffff',
+            enterColor: getComputedStyle(document.documentElement).getPropertyValue('--enter-color').trim() || '#000000',
+            exitBgColor: getComputedStyle(document.documentElement).getPropertyValue('--exit-bg-color').trim() || '#FFD701',
+            exitColor: getComputedStyle(document.documentElement).getPropertyValue('--exit-color').trim() || '#000000',
+            facilityBgColor: getComputedStyle(document.documentElement).getPropertyValue('--facility-bg-color').trim() || '#333F48',
+            facilityColor: getComputedStyle(document.documentElement).getPropertyValue('--facility-color').trim() || '#ffffff',
+            basicBgColor: getComputedStyle(document.documentElement).getPropertyValue('--basic-bg-color').trim() || '#ffffff',
+            basicColor: getComputedStyle(document.documentElement).getPropertyValue('--basic-color').trim() || '#000000'
+        };
+    }
+    
+    function getSettingsFromInputs() {
+        return {
+            largeTextFont: document.getElementById('largeTextFont')?.value || 'Noto Sans',
+            largeTextWeight: document.getElementById('largeTextWeight')?.value || '500',
+            medTextFont: document.getElementById('medTextFont')?.value || 'IBM Plex Sans SC',
+            medTextWeight: document.getElementById('medTextWeight')?.value || '400',
+            smallTextFont: document.getElementById('smallTextFont')?.value || 'Geist',
+            smallTextWeight: document.getElementById('smallTextWeight')?.value || '400',
+            enterBgColor: document.getElementById('enterZoneBgColor')?.value || '#ffffff',
+            enterColor: document.getElementById('enterZoneColor')?.value || '#000000',
+            exitBgColor: document.getElementById('exitZoneBgColor')?.value || '#FFD701',
+            exitColor: document.getElementById('exitZoneColor')?.value || '#000000',
+            facilityBgColor: document.getElementById('facilityZoneBgColor')?.value || '#333F48',
+            facilityColor: document.getElementById('facilityZoneColor')?.value || '#ffffff',
+            basicBgColor: document.getElementById('basicZoneBgColor')?.value || '#ffffff',
+            basicColor: document.getElementById('basicZoneColor')?.value || '#000000'
+        };
+    }
+    
+    function applyCustomStyles(settings) {
+        if (!settings) return;
+        
+        const canvas = document.getElementById('canvas');
+        if (!canvas) return;
+        
+        // Set CSS custom properties on canvas
+        canvas.style.setProperty('--large-text-font', settings.largeTextFont);
+        canvas.style.setProperty('--large-text-weight', settings.largeTextWeight);
+        canvas.style.setProperty('--med-text-font', settings.medTextFont);
+        canvas.style.setProperty('--med-text-weight', settings.medTextWeight);
+        canvas.style.setProperty('--small-text-font', settings.smallTextFont);
+        canvas.style.setProperty('--small-text-weight', settings.smallTextWeight);
+        
+        // Update zone colors via CSS custom properties
+        const root = document.documentElement;
+        root.style.setProperty('--enter-bg-color', settings.enterBgColor);
+        root.style.setProperty('--enter-color', settings.enterColor);
+        root.style.setProperty('--exit-bg-color', settings.exitBgColor);
+        root.style.setProperty('--exit-color', settings.exitColor);
+        root.style.setProperty('--facility-bg-color', settings.facilityBgColor);
+        root.style.setProperty('--facility-color', settings.facilityColor);
+        root.style.setProperty('--basic-bg-color', settings.basicBgColor);
+        root.style.setProperty('--basic-color', settings.basicColor);
+        
+        // Apply font styles to elements in canvas
+        canvas.querySelectorAll('.largeText').forEach(el => {
+            el.style.fontFamily = settings.largeTextFont;
+            el.style.fontWeight = settings.largeTextWeight;
+        });
+        
+        canvas.querySelectorAll('.textCN').forEach(el => {
+            el.style.fontFamily = settings.medTextFont;
+            el.style.fontWeight = settings.medTextWeight;
+        });
+        
+        canvas.querySelectorAll('.textEN').forEach(el => {
+            el.style.fontFamily = settings.smallTextFont;
+            el.style.fontWeight = settings.smallTextWeight;
+        });
+        
+        // Apply zone colors
+        canvas.querySelectorAll('.zone[data-category="enter"]').forEach(el => {
+            el.style.backgroundColor = settings.enterBgColor;
+            el.style.color = settings.enterColor;
+        });
+        
+        canvas.querySelectorAll('.zone[data-category="exit"]').forEach(el => {
+            el.style.backgroundColor = settings.exitBgColor;
+            el.style.color = settings.exitColor;
+        });
+        
+        canvas.querySelectorAll('.zone[data-category="facility"]').forEach(el => {
+            el.style.backgroundColor = settings.facilityBgColor;
+            el.style.color = settings.facilityColor;
+        });
+    }
+    
+    function initializePreview() {
+        const previewCanvas = document.querySelector('.stylePreviewCanvas');
+        if (!previewCanvas) return;
+        
+        // Ensure preview has the same structure as main canvas zones
+        const zones = previewCanvas.querySelectorAll('.zone');
+        zones.forEach(zone => {
+            // Reset any inline styles
+            zone.style.cssText = '';
+        });
+    }
+    
+    function loadCurrentStylesToInputs() {
+        const currentStyles = getCurrentCustomStyles();
+        if (!currentStyles) return;
+        
+        loadSettingsToInputs(currentStyles);
+    }
+    
+    function loadSettingsToInputs(settings) {
+        if (!settings) return;
+        
+        // Load font settings
+        const largeTextFont = document.getElementById('largeTextFont');
+        const largeTextWeight = document.getElementById('largeTextWeight');
+        const medTextFont = document.getElementById('medTextFont');
+        const medTextWeight = document.getElementById('medTextWeight');
+        const smallTextFont = document.getElementById('smallTextFont');
+        const smallTextWeight = document.getElementById('smallTextWeight');
+        
+        if (largeTextFont) largeTextFont.value = settings.largeTextFont;
+        if (largeTextWeight) largeTextWeight.value = parseInt(settings.largeTextWeight);
+        if (medTextFont) medTextFont.value = settings.medTextFont;
+        if (medTextWeight) medTextWeight.value = parseInt(settings.medTextWeight);
+        if (smallTextFont) smallTextFont.value = settings.smallTextFont;
+        if (smallTextWeight) smallTextWeight.value = parseInt(settings.smallTextWeight);
+        
+        // Load color settings
+        const colorSettings = [
+            { bg: 'enterZoneBgColor', fg: 'enterZoneColor' },
+            { bg: 'exitZoneBgColor', fg: 'exitZoneColor' },
+            { bg: 'facilityZoneBgColor', fg: 'facilityZoneColor' },
+            { bg: 'basicZoneBgColor', fg: 'basicZoneColor' }
+        ];
+        
+        colorSettings.forEach(setting => {
+            const bgInput = document.getElementById(setting.bg);
+            const fgInput = document.getElementById(setting.fg);
+            const bgHexInput = document.getElementById(setting.bg + 'Hex');
+            const fgHexInput = document.getElementById(setting.fg + 'Hex');
+            
+            const bgKey = setting.bg.replace('ZoneBgColor', 'BgColor');
+            const fgKey = setting.fg.replace('ZoneColor', 'Color');
+            
+            if (bgInput) bgInput.value = settings[bgKey];
+            if (fgInput) fgInput.value = settings[fgKey];
+            if (bgHexInput) bgHexInput.value = settings[bgKey].toUpperCase();
+            if (fgHexInput) fgHexInput.value = settings[fgKey].toUpperCase();
+        });
+    }
+    
+    function setupPreviewListeners() {
+        const previewCanvas = document.querySelector('.stylePreviewCanvas');
+        if (!previewCanvas) return;
+        
+        // Font inputs
+        const fontInputs = [
+            'largeTextFont', 'largeTextWeight',
+            'medTextFont', 'medTextWeight',
+            'smallTextFont', 'smallTextWeight'
+        ];
+        
+        fontInputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', () => {
+                    updatePreviewFromInputs();
+                });
+            }
+        });
+        
+        // Color inputs
+        const colorInputs = [
+            'enterZoneBgColor', 'enterZoneColor',
+            'exitZoneBgColor', 'exitZoneColor',
+            'facilityZoneBgColor', 'facilityZoneColor',
+            'basicZoneBgColor', 'basicZoneColor'
+        ];
+        
+        colorInputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', () => {
+                    updatePreviewFromInputs();
+                    syncColorToHex(input.id);
+                });
+            }
+        });
+        
+        // Setup HEX color inputs
+        setupHexColorInputs();
+    }
+    
+    function setupHexColorInputs() {
+        const hexInputPairs = [
+            { color: 'enterZoneBgColor', hex: 'enterZoneBgColorHex' },
+            { color: 'enterZoneColor', hex: 'enterZoneColorHex' },
+            { color: 'exitZoneBgColor', hex: 'exitZoneBgColorHex' },
+            { color: 'exitZoneColor', hex: 'exitZoneColorHex' },
+            { color: 'facilityZoneBgColor', hex: 'facilityZoneBgColorHex' },
+            { color: 'facilityZoneColor', hex: 'facilityZoneColorHex' },
+            { color: 'basicZoneBgColor', hex: 'basicZoneBgColorHex' },
+            { color: 'basicZoneColor', hex: 'basicZoneColorHex' }
+        ];
+        
+        hexInputPairs.forEach(pair => {
+            const colorInput = document.getElementById(pair.color);
+            const hexInput = document.getElementById(pair.hex);
+            
+            if (!colorInput || !hexInput) return;
+            
+            // Initialize hex input with current color value
+            hexInput.value = colorInput.value.toUpperCase();
+            
+            // Listen for changes in color picker -> update hex input
+            colorInput.addEventListener('input', () => {
+                hexInput.value = colorInput.value.toUpperCase();
+                hexInput.classList.remove('invalid');
+            });
+            
+            // Listen for changes in hex input -> update color picker
+            hexInput.addEventListener('blur', () => {
+                validateAndUpdateColor(hexInput, colorInput);
+            });
+            
+            hexInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    validateAndUpdateColor(hexInput, colorInput);
+                    hexInput.blur();
+                }
+            });
+            
+            hexInput.addEventListener('input', () => {
+                // Clear invalid state while typing
+                hexInput.classList.remove('invalid');
+            });
+        });
+    }
+    
+    function validateAndUpdateColor(hexInput, colorInput) {
+        let hexValue = hexInput.value.trim();
+        
+        // Add # prefix if missing
+        if (!hexValue.startsWith('#')) {
+            hexValue = '#' + hexValue;
+        }
+        
+        // Validate HEX color (3 or 6 digits)
+        if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(hexValue)) {
+            // Expand 3-digit hex to 6-digit
+            if (hexValue.length === 4) {
+                hexValue = '#' + hexValue[1] + hexValue[1] + hexValue[2] + hexValue[2] + hexValue[3] + hexValue[3];
+            }
+            
+            // Update color picker
+            colorInput.value = hexValue.toLowerCase();
+            hexInput.value = hexValue.toUpperCase();
+            hexInput.classList.remove('invalid');
+            
+            // Trigger preview update
+            updatePreviewFromInputs();
+        } else {
+            // Invalid HEX color - show error state
+            hexInput.classList.add('invalid');
+        }
+    }
+    
+    function syncColorToHex(colorInputId) {
+        const hexSuffix = 'Hex';
+        const hexInputId = colorInputId + hexSuffix;
+        const hexInput = document.getElementById(hexInputId);
+        const colorInput = document.getElementById(colorInputId);
+        
+        if (hexInput && colorInput) {
+            hexInput.value = colorInput.value.toUpperCase();
+            hexInput.classList.remove('invalid');
+        }
+    }
+    
+    function updatePreviewFromInputs() {
+        const previewCanvas = document.querySelector('.stylePreviewCanvas');
+        if (!previewCanvas) return;
+        
+        const settings = getSettingsFromInputs();
+        
+        // Update fonts in preview
+        previewCanvas.querySelectorAll('.largeText, .textCN').forEach(el => {
+            if (el.classList.contains('largeText')) {
+                el.style.fontFamily = settings.largeTextFont;
+                el.style.fontWeight = settings.largeTextWeight;
+            } else if (el.classList.contains('textCN')) {
+                el.style.fontFamily = settings.medTextFont;
+                el.style.fontWeight = settings.medTextWeight;
+            }
+        });
+        
+        previewCanvas.querySelectorAll('.textEN').forEach(el => {
+            el.style.fontFamily = settings.smallTextFont;
+            el.style.fontWeight = settings.smallTextWeight;
+        });
+        
+        // Update zone colors in preview
+        previewCanvas.querySelectorAll('.zone[data-category="enter"]').forEach(el => {
+            el.style.backgroundColor = settings.enterBgColor;
+            el.style.color = settings.enterColor;
+        });
+        
+        previewCanvas.querySelectorAll('.zone[data-category="exit"]').forEach(el => {
+            el.style.backgroundColor = settings.exitBgColor;
+            el.style.color = settings.exitColor;
+        });
+        
+        previewCanvas.querySelectorAll('.zone[data-category="facility"]').forEach(el => {
+            el.style.backgroundColor = settings.facilityBgColor;
+            el.style.color = settings.facilityColor;
+        });
+    }
+    
+    function loadSavedStyles() {
+        const saved = localStorage.getItem('customStyles');
+        if (saved) {
+            try {
+                const settings = JSON.parse(saved);
+                applyCustomStyles(settings);
+            } catch (e) {
+                console.error('Failed to load saved styles:', e);
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', loadConfigAndInitialize);
 
     function handleDrop(payload, e, composites, basicComponents, canvas) {
@@ -2542,6 +3594,286 @@ function applyHorizontalStretch(element, ratio) {
         }
         hideInsertLine();
     }
-</script>
 
+    /**
+     * 🛠️ 初始化 SVG 矢量边框层并自动监听 CSS 变量 (引入 clipPath 彻底解决接缝露底 bug)
+     */
+    function initSvgBorder() {
+        const canvas = document.getElementById('canvas');
+        if (!canvas) return;
+
+        const oldSvg = document.getElementById('canvas-svg-border');
+        if (oldSvg) oldSvg.remove();
+
+        // 依然保留 clipPath，用于把左右边框在最外圈可能多出来的亚像素边缘切干净
+        const svgHtml = `
+        <svg id="canvas-svg-border" width="100%" height="100%" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute; pointer-events:none; z-index:10; overflow:visible;">
+            <defs>
+                <clipPath id="svg-border-clip">
+                    <rect x="0" y="0" width="100%" height="100%" />
+                </clipPath>
+
+                <linearGradient id="svg-border-top" x1="0%" y1="0%" x2="100%" y2="0%"></linearGradient>
+                <linearGradient id="svg-border-bottom" x1="0%" y1="0%" x2="100%" y2="0%"></linearGradient>
+                <linearGradient id="svg-border-left" x1="0%" y1="0%" x2="0%" y2="100%"></linearGradient>
+                <linearGradient id="svg-border-right" x1="0%" y1="0%" x2="0%" y2="100%"></linearGradient>
+            </defs>
+            
+            <g clip-path="url(#svg-border-clip)">
+                <rect id="svg-rect-left" x="0" y="0" height="100%" fill="url(#svg-border-left)" />
+                <rect id="svg-rect-right" x="0" y="0" height="100%" fill="url(#svg-border-right)" />
+                <rect id="svg-rect-top" x="0" y="0" width="100%" fill="url(#svg-border-top)" />
+                <rect id="svg-rect-bottom" x="0" y="0" width="100%" fill="url(#svg-border-bottom)" />
+            </g>
+        </svg>
+        `;
+        
+        canvas.insertAdjacentHTML('afterbegin', svgHtml);
+
+        const observer = new MutationObserver(() => {
+            syncSvgBorderWithCssVariables(canvas);
+        });
+
+        observer.observe(canvas, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+
+        syncSvgBorderWithCssVariables(canvas);
+    }
+
+    /**
+     * 🔄 读取 CSS 变量并完美同步到 SVG 几何坐标系中
+     * 当某一边框宽度为 0 时，相邻边框自动延伸以覆盖完整范围
+     */
+    function syncSvgBorderWithCssVariables(canvas) {
+        const computedStyle = getComputedStyle(canvas);
+
+        const tWidth = parseInt(computedStyle.getPropertyValue('--canvas-border-width-top')) || 6;
+        const bWidth = parseInt(computedStyle.getPropertyValue('--canvas-border-width-bottom')) || 10;
+        const lWidth = parseInt(computedStyle.getPropertyValue('--canvas-border-width-left')) || 6;
+        const rWidth = parseInt(computedStyle.getPropertyValue('--canvas-border-width-right')) || 6;
+
+        const tGrad = computedStyle.getPropertyValue('--canvas-border-gradient-top').trim();
+        const bGrad = computedStyle.getPropertyValue('--canvas-border-gradient-bottom').trim();
+        const lGrad = computedStyle.getPropertyValue('--canvas-border-gradient-left').trim();
+        const rGrad = computedStyle.getPropertyValue('--canvas-border-gradient-right').trim();
+
+        const svgContainer = document.getElementById('canvas-svg-border');
+        if (svgContainer) {
+            svgContainer.style.top = `-${tWidth}px`;
+            svgContainer.style.left = `-${lWidth}px`;
+            svgContainer.style.right = `-${rWidth}px`;
+            svgContainer.style.bottom = `-${bWidth}px`;
+            svgContainer.style.width = `calc(100% + ${lWidth + rWidth}px)`;
+            svgContainer.style.height = `calc(100% + ${tWidth + bWidth}px)`;
+        }
+
+        // 边框重叠量 (单位: 像素)
+        const overlap = 2;
+
+        // 判断上下边框是否为 0
+        const isTopZero = tWidth === 0;
+        const isBottomZero = bWidth === 0;
+        
+        // 判断左右边框是否为 0
+        const isLeftZero = lWidth === 0;
+        const isRightZero = rWidth === 0;
+
+        // 1. 上下边框处理
+        const rectTop = document.getElementById('svg-rect-top');
+        if (rectTop) {
+            rectTop.setAttribute('height', tWidth);
+            // 如果左边框或右边框为 0，上下边框需要向对应方向延伸
+            if (isLeftZero) {
+                rectTop.setAttribute('x', -overlap);
+                rectTop.setAttribute('width', `calc(100% + ${overlap}px)`);
+            } else if (isRightZero) {
+                rectTop.setAttribute('x', 0);
+                rectTop.setAttribute('width', `calc(100% + ${overlap}px)`);
+            } else {
+                rectTop.setAttribute('x', 0);
+                rectTop.setAttribute('width', '100%');
+            }
+        }
+
+        const rectBottom = document.getElementById('svg-rect-bottom');
+        if (rectBottom) {
+            rectBottom.setAttribute('y', `calc(100% - ${bWidth}px)`);
+            rectBottom.setAttribute('height', bWidth);
+            // 如果左边框或右边框为 0，上下边框需要向对应方向延伸
+            if (isLeftZero) {
+                rectBottom.setAttribute('x', -overlap);
+                rectBottom.setAttribute('width', `calc(100% + ${overlap}px)`);
+            } else if (isRightZero) {
+                rectBottom.setAttribute('x', 0);
+                rectBottom.setAttribute('width', `calc(100% + ${overlap}px)`);
+            } else {
+                rectBottom.setAttribute('x', 0);
+                rectBottom.setAttribute('width', '100%');
+            }
+        }
+
+        // 2. 左右边框处理
+        // 计算左右边框的起始 y 坐标和高度
+        let leftStartY, rightStartY, leftHeight, rightHeight;
+        
+        if (isTopZero && isBottomZero) {
+            // 上下边框都为 0，左右边框覆盖整个高度
+            leftStartY = -overlap;
+            rightStartY = -overlap;
+            leftHeight = `calc(100% + ${overlap * 2}px)`;
+            rightHeight = `calc(100% + ${overlap * 2}px)`;
+        } else if (isTopZero) {
+            // 只有上边框为 0，左右边框向上延伸至顶部
+            leftStartY = -overlap;
+            rightStartY = -overlap;
+            leftHeight = `calc(100% - ${bWidth - overlap}px)`;
+            rightHeight = `calc(100% - ${bWidth - overlap}px)`;
+        } else if (isBottomZero) {
+            // 只有下边框为 0，左右边框向下延伸至底部
+            leftStartY = tWidth - overlap;
+            rightStartY = tWidth - overlap;
+            leftHeight = `calc(100% - ${tWidth - overlap}px)`;
+            rightHeight = `calc(100% - ${tWidth - overlap}px)`;
+        } else {
+            // 上下边框都存在，使用标准逻辑
+            leftStartY = tWidth - overlap;
+            rightStartY = tWidth - overlap;
+            leftHeight = `calc(100% - ${tWidth + bWidth - (overlap * 2)}px)`;
+            rightHeight = `calc(100% - ${tWidth + bWidth - (overlap * 2)}px)`;
+        }
+
+        // 左边边框
+        const rectLeft = document.getElementById('svg-rect-left');
+        if (rectLeft) {
+            rectLeft.setAttribute('x', 0);
+            rectLeft.setAttribute('width', lWidth);
+            rectLeft.setAttribute('y', leftStartY);
+            rectLeft.setAttribute('height', leftHeight);
+        }
+
+        // 右边边框
+        const rectRight = document.getElementById('svg-rect-right');
+        if (rectRight) {
+            rectRight.setAttribute('x', `calc(100% - ${rWidth}px)`);
+            rectRight.setAttribute('width', rWidth);
+            rectRight.setAttribute('y', rightStartY);
+            rectRight.setAttribute('height', rightHeight);
+        }
+
+        applyCssGradientOrColorToSvg('svg-border-top', tGrad);
+        applyCssGradientOrColorToSvg('svg-border-bottom', bGrad);
+        applyCssGradientOrColorToSvg('svg-border-left', lGrad);
+        applyCssGradientOrColorToSvg('svg-border-right', rGrad);
+    }
+    /**
+     * 🧪 解析标准的 CSS linear-gradient 或纯色 Hex 颜色并注入到 SVG Defs 中（完美适配渐变角度）
+     */
+    function applyCssGradientOrColorToSvg(gradientId, cssValue) {
+        const gradEl = document.getElementById(gradientId);
+        if (!gradEl) return;
+
+        gradEl.innerHTML = ''; // 清空旧色彩节点
+
+        if (!cssValue || cssValue === 'none' || cssValue === '') {
+            const stop = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop.setAttribute('offset', '0%');
+            stop.setAttribute('stop-color', 'transparent');
+            gradEl.appendChild(stop);
+            return;
+        }
+
+        // ✨ 核心优化：如果传入的值是纯 Hex 颜色（如 #333, #eaeaea）或纯色，直接生成矢量纯色块填充
+        if (!cssValue.toLowerCase().includes('gradient')) {
+            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop1.setAttribute('offset', '0%');
+            stop1.setAttribute('stop-color', cssValue);
+
+            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop2.setAttribute('offset', '100%');
+            stop2.setAttribute('stop-color', cssValue);
+
+            gradEl.appendChild(stop1);
+            gradEl.appendChild(stop2);
+            return;
+        }
+
+        // 默认 SVG 渐变方向坐标
+        let x1 = "0%", y1 = "0%", x2 = "0%", y2 = "100%";
+
+        const matchGradient = cssValue.match(/linear-gradient\((.*)\)/i);
+        if (matchGradient && matchGradient[1]) {
+            const fullContent = matchGradient[1].trim();
+            const parts = fullContent.split(/,(?![^\(]*\))/); // 排除 rgba() 内部的逗号
+
+            let firstPart = parts[0].trim().toLowerCase();
+            let hasDirection = false;
+
+            // A. 处理类似 to right, to bottom right 等方向关键字
+            if (firstPart.startsWith('to ')) {
+                hasDirection = true;
+                x1 = "0%"; y1 = "0%"; x2 = "0%"; y2 = "0%";
+                if (firstPart.includes('right')) x2 = "100%";
+                if (firstPart.includes('left'))  x1 = "100%";
+                if (firstPart.includes('bottom')) y2 = "100%";
+                if (firstPart.includes('top'))    y1 = "100%";
+
+                if (!firstPart.includes('right') && !firstPart.includes('left')) {
+                    x1 = "0%"; x2 = "0%";
+                }
+                if (!firstPart.includes('top') && !firstPart.includes('bottom')) {
+                    y1 = "0%"; y2 = "0%";
+                }
+            } 
+            // B. 用三角函数精确处理数值角度（如 45deg, 90deg, 180deg 等）
+            else if (firstPart.includes('deg')) {
+                hasDirection = true;
+                const angle = parseFloat(firstPart);
+                if (!isNaN(angle)) {
+                    // 转换 CSS 角度到 SVG 映射弧度
+                    const angleRad = (angle - 90) * Math.PI / 180;
+                    const cx = 0.5, cy = 0.5, r = 0.5;
+                    const vx = Math.cos(angleRad) * r;
+                    const vy = Math.sin(angleRad) * r;
+
+                    x1 = `${((cx - vx) * 100).toFixed(2)}%`;
+                    y1 = `${((cy - vy) * 100).toFixed(2)}%`;
+                    x2 = `${((cx + vx) * 100).toFixed(2)}%`;
+                    y2 = `${((cy + vy) * 100).toFixed(2)}%`;
+                }
+            }
+
+            const stopsData = hasDirection ? parts.slice(1) : parts;
+
+            // 应用解析完的方向坐标
+            gradEl.setAttribute('x1', x1);
+            gradEl.setAttribute('y1', y1);
+            gradEl.setAttribute('x2', x2);
+            gradEl.setAttribute('y2', y2);
+
+            // 生成各个位置的颜色节点
+            stopsData.forEach((stopStr, index) => {
+                const trimmed = stopStr.trim();
+                const match = trimmed.match(/(rgba?\(.*?\)|#[a-fA-F0-9]{3,8}|\b\w+\b)\s*([\d\.]+%|px)?/i);
+                if (match) {
+                    const color = match[1];
+                    const offset = match[2] ? match[2] : `${(index / (stopsData.length - 1)) * 100}%`;
+
+                    const stopEl = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                    stopEl.setAttribute('offset', offset);
+                    stopEl.setAttribute('stop-color', color);
+                    gradEl.appendChild(stopEl);
+                }
+            });
+        }
+    }
+
+    // 自动在 DOMContentLoaded 或运行期间安全绑定初始化逻辑
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSvgBorder);
+    } else {
+        initSvgBorder();
+    }
+</script>
 </html>

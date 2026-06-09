@@ -137,6 +137,8 @@ body {
     border: 2px solid var(--border-color-default);
     background-image: url(icon/ellipse.svg);
     background-repeat: repeat;
+
+    user-select: none;
 }
 
 #categoriesList button {
@@ -225,6 +227,7 @@ h3 {
     color: var(--text-muted);
     font-size: 14px;
     font-weight: 500;
+    user-select: none;
 }
 
 .componentGroupItems {
@@ -283,6 +286,202 @@ h3 {
 .emptyState {
     color: var(--text-muted);
     font-size: 13px;
+    user-select: none;
+}
+
+.settingsPanel {
+    display: none;
+    flex-flow: column nowrap;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    width: 410px;
+}
+
+.settingsPanel.active {
+    display: flex;
+}
+
+.componentsPanel {
+    display: flex;
+}
+
+.componentsPanel.hidden {
+    display: none;
+}
+
+.savedFilePanel {
+    display: none;
+    flex-flow: column nowrap;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    width: 410px;
+}
+
+.savedFilePanel.active {
+    display: flex;
+}
+
+.savedFilePanel h2 {
+    margin: 0;
+    padding: 8px 12px;
+    background: var(--bg-header);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.savedFileList {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 8px;
+    padding: 12px;
+    flex: 1;
+    overflow-y: auto;
+    box-sizing: border-box;
+    border: 2px solid var(--border-color-default);
+    background-image: url(icon/ellipse.svg);
+    background-repeat: repeat;
+}
+
+.savedFileList::-webkit-scrollbar {
+    width: 6px;
+}
+
+.savedFileList::-webkit-scrollbar-thumb {
+    background-color: var(--border-color-default);
+    border-radius: 4px;
+    border-right: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.savedFileList::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#noSavedFile {
+    color: var(--text-muted);
+    font-size: 13px;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.savedFileCard {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 6px;
+    padding: 12px;
+    border: 2px solid var(--border-color-default);
+    border-radius: 4px;
+    background: var(--bg-canvas-container);
+    transition: all 0.2s ease;
+}
+
+.savedFileCard:hover {
+    background: var(--bg-item-hover);
+    border-color: var(--border-color-dark);
+}
+
+.savedFileTitle {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.savedFileInfo {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-control);
+}
+
+.savedFileDateTime {
+    white-space: nowrap;
+}
+
+.savedFileInfo .divider {
+    color: var(--text-placeholder);
+    user-select: none;
+}
+
+.savedFileInfo button {
+    background: transparent;
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text-control);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.savedFileInfo button:hover {
+    background: var(--bg-btn-hover);
+    color: var(--color-active-dark);
+}
+
+.savedFileDeleteBtn:hover {
+    background: var(--color-danger) !important;
+    color: var(--text-light) !important;
+}
+
+.stylePreviewWrapper {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    border-radius: 4px;
+    user-select: none;
+}
+
+.stylePreviewCanvas {
+    display: flex;
+    flex-flow: row nowrap;
+    border: 4px solid #555555;
+    transform: scale(0.45);
+    transform-origin: center;
+    width: fit-content;
+    height: fit-content;
+}
+
+.stylePreviewCanvas .zone {
+    padding: 0 16px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 16px;
+    height: 90px;
+}
+
+.stylePreviewCanvas img {
+    height: 60px;
+}
+
+.stylePreviewCanvas .textBox {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 6px;
+}
+
+.stylePreviewCanvas .textCN {
+    font-size: 31px;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.stylePreviewCanvas .textEN {
+    font-size: 20px;
+    white-space: nowrap;
 }
 
 .rightPanel {
@@ -291,6 +490,28 @@ h3 {
     position: relative;
     overflow: hidden;
     background: var(--bg-canvas-container);
+}
+
+/* Toast notification */
+.toast {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    font-size: 14px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.toast.show {
+    opacity: 1;
+    visibility: visible;
 }
 
 .propertyPanel {
@@ -432,6 +653,19 @@ h3 {
     height: 28px;
 }
 
+/* HEX color input specific styling */
+.controlRow input[type="text"][id$="Hex"] {
+    width: 72px;
+    flex: none;
+    text-align: center;
+    font-size: 12px;
+}
+
+.controlRow input[type="text"][id$="Hex"].invalid {
+    border-color: var(--color-danger);
+    background-color: rgba(255, 77, 79, 0.05);
+}
+
 .controlRow select {
     max-height: 100px;
     overflow-y: auto;
@@ -541,6 +775,8 @@ h3 {
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
+
+    user-select: none;
 }
 
 .logo img {
@@ -569,7 +805,9 @@ h3 {
     text-decoration: none;
     font-size: 12px;
 
-    transition: filter 0.3s;
+    transition: all 0.3s;
+
+    user-select: none;
 }
 
 .info a:hover {
@@ -577,15 +815,31 @@ h3 {
     transition: filter 0.3s;
 }
 
+.info a.active {
+    background-color: var(--color-active-dark);
+    border-color: var(--border-color-dark);
+    transition: all 0.3s;
+}
+
+.info a.active img {
+    filter: brightness(0) invert(1) !important;
+}
+
 .info a img {
     height: 24px;
+}
+
+.version {
+    font-size: 12px;
+    color: var(--text-placeholder);
+    user-select: none;
 }
 
 #canvas {
     position: relative;
     display: flex;
     flex-flow: row nowrap;
-    height: 90px;
+    height: var(--canvas-height, 90px);
     width: max-content;
     min-width: 88px;
     flex-shrink: 0;
@@ -604,30 +858,20 @@ h3 {
     backface-visibility: hidden;
 }
 
-#canvas::after {
-    content: '';
+#canvas-svg-border {
     position: absolute;
-    /* 完全覆盖父元素，使用负 margin 扩展 */
-    top: 0;
-    left: 0;
-    /* 使用负 margin 来扩展边框区域，并额外扩展 0.5px 以覆盖亚像素缝隙 */
-    top: calc(0px - var(--canvas-border-width-top, 6px) + 0.5px);
-    left: calc(0px - var(--canvas-border-width-left, 6px) + 0.5px);
-    right: calc(0px - var(--canvas-border-width-right, 6px) + 0.5px);
-    bottom: calc(0px - var(--canvas-border-width-bottom, 10px) + 0.5px);
-    border-color: var(--canvas-border-color, var(--canvas-border-default));
-    border-width: var(--canvas-border-width, 6px 6px 10px 6px);
-    border-style: var(--canvas-border-style, solid);
-    border-radius: inherit;
-    pointer-events: none;
-    z-index: 10;
-    box-sizing: border-box;
-    /* 确保与父元素完美对齐，防止缝隙 */
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    /* 强制硬件加速，提高渲染精度 */
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
+    /* 核心定位：利用 CSS 变量将 SVG 容器外扩到原本的边框区域 */
+    top: calc(0px - var(--canvas-border-width-top, 6px));
+    left: calc(0px - var(--canvas-border-width-left, 6px));
+    right: calc(0px - var(--canvas-border-width-right, 6px));
+    bottom: calc(0px - var(--canvas-border-width-bottom, 10px));
+    
+    width: calc(100% + var(--canvas-border-width-left, 6px) + var(--canvas-border-width-right, 6px)) !important;
+    height: calc(100% + var(--canvas-border-width-top, 6px) + var(--canvas-border-width-bottom, 10px)) !important;
+    
+    pointer-events: none; /* 穿透点击，不影响画布内元素的拖拽和操作 */
+    z-index: 10;          /* 保证在最上层作为描边 */
+    overflow: visible;
 }
 
 /* ========================================
@@ -636,18 +880,18 @@ h3 {
 
 /* --- Category Background and Text Colors --- */
 .zone[data-category="enter"] {
-    background-color: #ffffff;
-    color: #000000;
+    background-color: var(--enter-bg-color, #ffffff);
+    color: var(--enter-color, #000000);
 }
 
 .zone[data-category="exit"] {
-    background-color: #FFD701;
-    color: #000000;
+    background-color: var(--exit-bg-color, #FFD701);
+    color: var(--exit-color, #000000);
 }
 
 .zone[data-category="facility"] {
-    background-color: #333F48;
-    color: #ffffff;
+    background-color: var(--facility-bg-color, #333F48);
+    color: var(--facility-color, #ffffff);
 }
 
 .zone[data-category="facility"] .icon {
@@ -679,14 +923,14 @@ h3 {
 }
 
 .exitInfo .textCN {
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 400;
     text-box: trim-both cap alphabetic;
     color: var(--fg-color, inherit);
 }
 
 .exitInfo .textEN {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--fg-color, inherit);
 }
 
@@ -699,9 +943,9 @@ h3 {
 }
 
 .largeText {
-    font-family: 'Noto Sans';
+    font-family: var(--large-text-font, 'Noto Sans');
     font-size: 82px;
-    font-weight: 500;
+    font-weight: var(--large-text-weight, 500);
     letter-spacing: -0.03em;
     font-feature-settings: 'pnum' on, 'lnum' on;
     text-box: trim-both cap alphabetic;
@@ -716,13 +960,16 @@ h3 {
 
 .textCN {
     font-size: 31px;
-    font-weight: 400;
+    font-weight: var(--med-text-weight, 400);
+    font-family: var(--med-text-font, 'IBM Plex Sans SC');
     text-box: trim-both cap alphabetic;
     color: var(--fg-color, inherit);
 }
 
 .textEN {
     font-size: 20px;
+    font-family: var(--small-text-font, 'Geist');
+    font-weight: var(--small-text-weight, 400);
     color: var(--fg-color, inherit);
 }
 
@@ -925,7 +1172,7 @@ h3 {
     left: 24px;
     display: flex;
     flex-flow: row nowrap;
-    gap: 8px;
+    gap: 10px;
     z-index: 10;
     box-sizing: border-box;
 }
@@ -951,6 +1198,23 @@ h3 {
     background: var(--bg-panel);
     border: 1px solid var(--border-color-light);
     cursor: pointer;
+    font-family: inherit;
+    outline: none;
+}
+
+.canvasSizeSelectWrapper {
+    display: flex;
+    gap: 10.5px;
+    align-items: center;
+}
+
+#canvasCustomWidthInput {
+    width: 75px;
+    height: 25px;
+    padding: 0 4px;
+    font-size: 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color-light);
     font-family: inherit;
     outline: none;
 }
@@ -1048,6 +1312,41 @@ h3 {
     background: var(--bg-main);
 }
 
+.saveWrapper {
+    position: relative;
+}
+
+.saveDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bg-canvas-container);
+    border: 1px solid var(--border-color-light);
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-flow: column nowrap;
+    z-index: 20;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.saveDropdown.show {
+    display: flex;
+}
+
+.saveDropdown button {
+    text-align: left;
+    padding: 8px 12px;
+    width: 100%;
+    border-radius: 0;
+    white-space: nowrap;
+    font-family: "Geist", "IBM Plex Sans SC", sans-serif;
+}
+
+.saveDropdown button:hover {
+    background: var(--bg-main);
+}
+
 .hanger {
     position: absolute;
     bottom: calc(100% + 2px);
@@ -1139,4 +1438,138 @@ h3 {
     background: var(--color-active-dark);
     color: var(--bg-canvas-container);
     border-color: var(--color-active-dark);
+}
+
+.settingsBtnWrapper {
+    display: none;
+    flex-flow: row nowrap;
+    gap: 8px;
+    justify-content: flex-end;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color-default);
+}
+
+.settingsBtnWrapper.active {
+    display: flex;
+}
+
+.settingsBtnWrapper button {
+    padding: 2px 8px;
+    background: var(--bg-canvas-container);
+    border: 1px solid var(--border-color-default);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    color: var(--text-dark);
+}
+
+.settingsBtnWrapper button:hover {
+    background: var(--bg-btn-hover);
+    border-color: var(--border-color-dark);
+}
+
+.settingsBtnWrapper button#btnResetSettings {
+    background: var(--color-danger);
+    color: var(--bg-canvas-container);
+    border-color: var(--color-danger);
+}
+
+.settingsBtnWrapper button#btnResetSettings:hover {
+    filter: brightness(0.95);
+}
+
+.settingsBtnWrapper button#btnSaveSettings {
+    background: var(--color-active-dark);
+    color: var(--bg-canvas-container);
+    border-color: var(--color-active-dark);
+}
+
+.settingsBtnWrapper button#btnSaveSettings:hover {
+    background: #000000;
+    border-color: #000000;
+}
+
+.settingsWrapper {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 10px;
+    padding: 12px;
+    border: 2px solid var(--border-color-default);
+    background-image: url(icon/ellipse.svg);
+    background-repeat: repeat;
+    flex: 1;
+}
+
+.settingsGroup {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 10px;
+}
+
+.settingsGroup h3 {
+    margin: 0;
+    padding: 2px 6px;
+    background: var(--bg-header);
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.settingsGroup h4 {
+    margin: 8px 0 4px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.settingsPanel > h2 {
+    margin: 0;
+    padding: 8px 12px;
+    background: var(--bg-header);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.settingsPanel > span {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: -4px;
+}
+
+.settingsGroup h4 {
+    margin: 8px 0 4px 0;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.settingsPanel > h2 {
+    margin: 0;
+    padding: 8px 12px;
+    background: var(--bg-header);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.settingsPanel > span {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: -4px;
+}
+
+.dot-divider-v {
+    width: 12px;
+    height: 100%;
+    background-image: url(icon/ellipse.svg);
+    background-repeat: repeat;
+}
+
+.dot-divider-h {
+    width: 100%;
+    height: 12px;
+    background-image: url(icon/ellipse.svg);
+    background-repeat: repeat;
 }
