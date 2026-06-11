@@ -300,7 +300,6 @@ h3 {
     gap: 12px;
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
     width: 410px;
 }
 
@@ -1592,6 +1591,35 @@ svg.icon {
     border-color: var(--color-active-dark);
 }
 
+/* Upload Icon Button Styles */
+.uploadIconBtn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color-default);
+    background: var(--bg-canvas-container);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.uploadIconBtn:hover {
+    background: var(--bg-btn-hover);
+    border-color: var(--border-color-dark);
+}
+
+.uploadIconBtn img,
+.uploadIconBtn svg {
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+}
+
 .settingsBtnWrapper {
     display: none;
     flex-flow: row nowrap;
@@ -1651,6 +1679,23 @@ svg.icon {
     background-image: url(icon/ellipse.svg);
     background-repeat: repeat;
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.settingsWrapper::-webkit-scrollbar {
+    width: 6px;
+}
+
+.settingsWrapper::-webkit-scrollbar-thumb {
+    background-color: var(--border-color-default);
+    border-radius: 4px;
+    border-right: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.settingsWrapper::-webkit-scrollbar-track {
+    background: transparent;
 }
 
 .settingsGroup {
@@ -1791,4 +1836,28 @@ svg.icon {
 
 #cancelExportBtn:active {
     background: var(--bg-btn-active);
+}
+
+.creditList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 4px;
+}
+
+.creditInfo {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 4px;
+}
+
+.creditInfo img {
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color-default);
+}
+
+.creditExtraInfo {
+    font-size: 13px;
+    text-align: center;
 }

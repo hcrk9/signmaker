@@ -59,6 +59,15 @@
                             <button class="optionBtn">暗色</button>
                         </div>
                     </div>
+                    <div class="controlRow">
+                        <label>导出图片(PNG)缩放倍率</label>
+                        <input type="number" name="" id="PNGExportScale" min="1" max="100" step="1">
+                    </div>
+                    <div class="controlRow">
+                        <label>光照混合模式·不透明度</label>
+                        <select name="" id="lightingMixMode"></select>
+                        <input type="number" name="" id="lightingOpacity" min="1" max="100" step="1">
+                    </div>
                 </div>
                 <div class="settingsGroup">
                     <h3>样式自定义</h3>
@@ -148,13 +157,41 @@
                     <span style="font-size: 14px;color: var(--text-control);">*预览画布中图标颜色可能不会反映用户修改，请以实际画布显示为准。</span>
                 </div>
                 <div class="settingsGroup">
-                    <h3>制作者列表</h3>
-                    <div class="creditWrapper">
-                        <h4>设计 / 开发</h4>
-                        <div class="creditInfo">
-                            <img src="icon/credit/hachi.svg" alt="Hachi">
-                            <h4>哈赤 Hachi</h4>
+                    <h3>制作者</h3>
+                    <img src="icon/credit/chitose.png" alt="Sign Maker, A Chitose Project">
+                    <div class="creditList">
+                        <div class="creditWrapper">
+                            <h4>设计 / 开发</h4>
+                            <div class="creditInfo">
+                                <img src="icon/credit/hachi.jpg" alt="Hachi">
+                                <h4>哈赤 Hachi</h4>
+                            </div>
                         </div>
+                        <div class="creditWrapper">
+                            <h4>协力</h4>
+                            <div class="creditInfo">
+                                <img src="icon/credit/xiaoliu.jpg" alt="Xiaoliu">
+                                <h4>狐狐</h4>
+                            </div>
+                        </div>
+                        <div class="creditWrapper">
+                            <h4>代码实现</h4>
+                            <div class="creditInfo">
+                                <img src="icon/credit/qwen.png" alt="Qwen">
+                                <h4>Qwen3.7-Max</h4>
+                            </div>
+                        </div>
+                        <div class="creditWrapper">
+                            <h4>情感支持</h4>
+                            <div class="creditInfo">
+                                <img src="icon/credit/kinako.jpg" alt="kinako">
+                                <h4>黄豆粉</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="creditExtraInfo">
+                    <span style="font-weight: 600;">说明</span>
+                    <p>本站使用了 html2canvas 库，部分组件图标由Wikipedia用户David Xuang绘制。</p>
                     </div>
                 </div>
             </div>
@@ -165,7 +202,7 @@
             <button id="btnCancelSettings">取消修改</button>
             <button id="btnSaveSettings">保存修改</button>
         </div>
-        <span class="version">alpha release v20260610.1</span>
+        <span class="version">alpha release v20260611.2</span>
     </section>
 
     <section class="rightPanel">
@@ -389,6 +426,9 @@
         if (!container) return;
         const imgs = Array.from(container.querySelectorAll('img.icon'));
         for (const img of imgs) {
+            // 跳过用户上传的自定义图标（Data URL），保持 <img> 标签渲染
+            const src = img.getAttribute('src') || img.dataset.src || img.src;
+            if (src && src.startsWith('data:')) continue;
             await replaceImgWithInlineSvg(img);
         }
     }
@@ -399,6 +439,11 @@
      * @returns {Element|null}
      */
     function findIconElement(element) {
+        // 首先检查 element 本身是否是图标元素
+        if (element.matches('svg.icon') || element.matches('img.icon')) {
+            return element;
+        }
+        // 然后查找子元素中的图标
         return element.querySelector('svg.icon') || element.querySelector('img.icon');
     }
 
@@ -1383,6 +1428,7 @@ function applyHorizontalStretch(element, ratio) {
                 }
 
                 let input;
+                let pendingUploadBtn = null;
                 if (control.type === 'text' && targetEl) {
                     input = document.createElement('input');
                     input.type = 'text';
@@ -1590,6 +1636,46 @@ function applyHorizontalStretch(element, ratio) {
                                 });
                                 input.appendChild(btn);
                             });
+
+                            // 仅基础组件 icon 显示上传按钮
+                            if (!element.classList.contains('composite')) {
+                                const uploadBtn = document.createElement('button');
+                                uploadBtn.className = 'uploadIconBtn';
+                                uploadBtn.title = '上传SVG图标 / Upload SVG Icon';
+                                uploadBtn.innerHTML = '<img src="icon/ui/upload.svg" alt="Upload">';
+
+                                const fileInput = document.createElement('input');
+                                fileInput.type = 'file';
+                                fileInput.accept = '.svg';
+                                fileInput.style.display = 'none';
+
+                                fileInput.addEventListener('change', (e) => {
+                                    const file = e.target.files[0];
+                                    if (!file || !file.type.includes('svg')) {
+                                        alert('请选择 SVG 格式的图标文件');
+                                        return;
+                                    }
+
+                                    const reader = new FileReader();
+                                    reader.onload = (event) => {
+                                        const dataUrl = event.target.result;
+                                        const currentTargetImg = findIconElement(element);
+                                        if (currentTargetImg) {
+                                            updateIconSrc(currentTargetImg, dataUrl);
+                                            input.querySelectorAll('.optionBtn').forEach(b => b.classList.remove('active'));
+                                        }
+                                    };
+                                    reader.readAsDataURL(file);
+                                    fileInput.value = '';
+                                });
+
+                                uploadBtn.addEventListener('click', () => {
+                                    fileInput.click();
+                                });
+
+                                input.appendChild(uploadBtn);
+                                input.appendChild(fileInput);
+                            }
                         }
                     } else {
                         input = document.createElement('select');
@@ -1705,6 +1791,46 @@ function applyHorizontalStretch(element, ratio) {
                                     updateIconSrc(currentTargetImg, fullPath);
                                 }
                             });
+
+                            // 仅基础组件 icon 显示上传按钮
+                            if (!element.classList.contains('composite')) {
+                                const uploadBtn = document.createElement('button');
+                                uploadBtn.className = 'uploadIconBtn';
+                                uploadBtn.title = '上传SVG图标 / Upload SVG Icon';
+                                uploadBtn.innerHTML = '<img src="icon/ui/upload.svg" alt="Upload">';
+
+                                const fileInput = document.createElement('input');
+                                fileInput.type = 'file';
+                                fileInput.accept = '.svg';
+                                fileInput.style.display = 'none';
+
+                                fileInput.addEventListener('change', (e) => {
+                                    const file = e.target.files[0];
+                                    if (!file || !file.type.includes('svg')) {
+                                        alert('请选择 SVG 格式的图标文件');
+                                        return;
+                                    }
+
+                                    const reader = new FileReader();
+                                    reader.onload = (event) => {
+                                        const dataUrl = event.target.result;
+                                        const currentTargetImg = findIconElement(element);
+                                        if (currentTargetImg) {
+                                            updateIconSrc(currentTargetImg, dataUrl);
+                                            defaultOption.selected = true;
+                                        }
+                                    };
+                                    reader.readAsDataURL(file);
+                                    fileInput.value = '';
+                                });
+
+                                uploadBtn.addEventListener('click', () => {
+                                    fileInput.click();
+                                });
+
+                                // 延迟添加上传按钮，确保出现在 select 下拉框右侧
+                                pendingUploadBtn = { btn: uploadBtn, fileInput };
+                            }
                         } else if (isFacilityDropdown) {
                             // Facility dropdown logic
                             const facilities = presetFacilitiesConfig;
@@ -1816,6 +1942,12 @@ function applyHorizontalStretch(element, ratio) {
                     } // 结束 editText 对齐 dropdown 的特殊处理
                 }
                 if (input) row.appendChild(input);
+                // 将延迟添加的上传按钮追加到 row（确保在 select 右侧）
+                if (pendingUploadBtn) {
+                    row.appendChild(pendingUploadBtn.btn);
+                    row.appendChild(pendingUploadBtn.fileInput);
+                    pendingUploadBtn = null;
+                }
                 group.appendChild(row);
             });
             container.appendChild(group);
@@ -1869,6 +2001,12 @@ function applyHorizontalStretch(element, ratio) {
             if (signStyleSelect) {
                 signStyleSelect.addEventListener('change', handleSignStyleChange);
             }
+
+            // Initialize PNG export scale setting
+            initPNGExportScaleSetting();
+            
+            // Initialize lighting overlay settings
+            initLightingOverlaySettings();
 
             // Fetch addon details
             addonsList = [];
@@ -2155,6 +2293,110 @@ function applyHorizontalStretch(element, ratio) {
         }
     }
 
+    /**
+     * 初始化 PNG 导出缩放倍率设置
+     */
+    function initPNGExportScaleSetting() {
+        const pngExportScaleInput = document.getElementById('PNGExportScale');
+        if (!pngExportScaleInput) return;
+        
+        // 从 localStorage 读取保存的值，默认值为 10
+        const savedScale = localStorage.getItem('pngExportScale');
+        const defaultScale = 10;
+        const scaleValue = savedScale ? parseInt(savedScale) : defaultScale;
+        
+        // 设置输入框的值
+        pngExportScaleInput.value = scaleValue;
+        
+        // 监听输入变化，保存到 localStorage
+        pngExportScaleInput.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            if (value && value >= 1 && value <= 100) {
+                localStorage.setItem('pngExportScale', value.toString());
+            }
+        });
+    }
+
+    /**
+     * 获取当前 PNG 导出缩放倍率
+     * @returns {number} 缩放倍率（默认 10）
+     */
+    function getPNGExportScale() {
+        const savedScale = localStorage.getItem('pngExportScale');
+        return savedScale ? parseInt(savedScale) : 10;
+    }
+
+    /**
+     * 初始化光照叠加层设置（混合模式和不透明度）
+     */
+    function initLightingOverlaySettings() {
+        const lightingMixModeSelect = document.getElementById('lightingMixMode');
+        const lightingOpacityInput = document.getElementById('lightingOpacity');
+        const lightingOverlay = document.getElementById('lightingOverlay');
+        
+        if (!lightingMixModeSelect || !lightingOpacityInput || !lightingOverlay) return;
+        
+        // 定义可用的混合模式选项
+        const mixBlendModes = [
+            'normal',
+            'multiply',
+            'screen',
+            'overlay',
+            'darken',
+            'lighten',
+            'color-dodge',
+            'color-burn',
+            'hard-light',
+            'soft-light',
+            'difference',
+            'exclusion',
+            'hue',
+            'saturation',
+            'color',
+            'luminosity'
+        ];
+        
+        // 动态生成下拉菜单选项
+        lightingMixModeSelect.innerHTML = '';
+        mixBlendModes.forEach(mode => {
+            const option = document.createElement('option');
+            option.value = mode;
+            option.textContent = mode;
+            lightingMixModeSelect.appendChild(option);
+        });
+        
+        // 从 localStorage 读取保存的混合模式，默认为 'hard-light'
+        const savedMixMode = localStorage.getItem('lightingMixMode') || 'hard-light';
+        lightingMixModeSelect.value = savedMixMode;
+        lightingOverlay.style.mixBlendMode = savedMixMode;
+        
+        // 监听混合模式变化
+        lightingMixModeSelect.addEventListener('change', (e) => {
+            const mode = e.target.value;
+            lightingOverlay.style.mixBlendMode = mode;
+            localStorage.setItem('lightingMixMode', mode);
+        });
+        
+        // 从 localStorage 读取保存的不透明度，默认为 0.3（范围 0-1，步长 0.1）
+        const savedOpacity = localStorage.getItem('lightingOpacity');
+        const defaultOpacity = 0.3;
+        const opacityValue = savedOpacity ? parseFloat(savedOpacity) : defaultOpacity;
+        
+        // 设置输入框的值（显示为百分比）
+        lightingOpacityInput.value = Math.round(opacityValue * 100);
+        lightingOverlay.style.opacity = opacityValue;
+        
+        // 监听不透明度变化
+        lightingOpacityInput.addEventListener('input', (e) => {
+            const percentage = parseInt(e.target.value);
+            if (percentage >= 0 && percentage <= 100) {
+                const opacity = percentage / 100;
+                lightingOverlay.style.opacity = opacity;
+                localStorage.setItem('lightingOpacity', opacity.toString());
+            }
+        });
+    }
+
     function handleSignStyleChange(e) {
         const styleId = e.target.value;
         const style = signsConfig.signStyles.find(s => s.id === styleId);
@@ -2360,6 +2602,7 @@ function applyHorizontalStretch(element, ratio) {
 
                 const compData = {
                     id: child.id,
+                    tagName: child.tagName.toLowerCase(),
                     className: child.className,
                     dataset: { ...child.dataset },
                     style: child.style.cssText,
@@ -2443,7 +2686,8 @@ function applyHorizontalStretch(element, ratio) {
             });
 
             for (const compData of zoneData.components) {
-                const el = document.createElement('div');
+                const tag = compData.tagName || 'div';
+                const el = document.createElement(tag);
                 el.id = compData.id;
                 el.className = compData.className;
                 if (compData.style) {
@@ -2455,6 +2699,12 @@ function applyHorizontalStretch(element, ratio) {
                     Object.entries(compData.dataset).forEach(([k, v]) => {
                         el.dataset[k] = v;
                     });
+                }
+
+                // 恢复 img 标签的 src 属性（用于用户上传的自定义 Data URL 图标）
+                if (tag === 'img' && compData.dataset && compData.dataset.src) {
+                    el.setAttribute('src', compData.dataset.src);
+                    el.setAttribute('alt', 'ICON');
                 }
 
                 if (el.dataset.feature) {
@@ -2721,13 +2971,14 @@ function applyHorizontalStretch(element, ratio) {
         const canvas = document.getElementById('canvas');
         if (!canvas) return;
         
-        // Remove all child elements except hangers and lighting overlay
+        // Remove all child elements except hangers, lighting overlay, insert-line, and svg border
         const children = Array.from(canvas.children);
         children.forEach(child => {
-            // Keep hanger elements and lighting overlay
+            // Keep hanger elements, lighting overlay, insert-line, and svg border
             if (!child.classList.contains('hanger') && 
                 !child.classList.contains('lighting-overlay') &&
-                !child.classList.contains('insert-line')) {
+                !child.classList.contains('insert-line') &&
+                child.id !== 'canvas-svg-border') {
                 child.remove();
             }
         });
@@ -2963,7 +3214,8 @@ function applyHorizontalStretch(element, ratio) {
                 lightingOverlay.style.display = 'none';
             }
 
-            const scale = 10;
+            // 从设置中读取 PNG 导出缩放倍率
+            const scale = getPNGExportScale();
 
             // 纯画布内容尺寸（无透明边框、无 SVG 边框）
             const contentW = canvasEl.offsetWidth;
@@ -3064,9 +3316,37 @@ function applyHorizontalStretch(element, ratio) {
                     }
                     const ctx = composeCanvas.getContext('2d');
 
-                    // 用 hard-light 混合模式绘制光照层（与 CSS mix-blend-mode: hard-light 对应）
-                    ctx.globalCompositeOperation = 'hard-light';
-                    ctx.globalAlpha = 0.3;
+                    // 从设置中读取光照混合模式和不透明度
+                    const savedMixMode = localStorage.getItem('lightingMixMode') || 'hard-light';
+                    const savedOpacity = localStorage.getItem('lightingOpacity');
+                    const opacityValue = savedOpacity ? parseFloat(savedOpacity) : 0.3;
+                    
+                    // 将 CSS mix-blend-mode 映射到 Canvas globalCompositeOperation
+                    // 注意：不是所有 CSS 混合模式都有对应的 Canvas 复合操作
+                    const compositeModeMap = {
+                        'normal': 'source-over',
+                        'multiply': 'multiply',
+                        'screen': 'screen',
+                        'overlay': 'overlay',
+                        'darken': 'darken',
+                        'lighten': 'lighten',
+                        'color-dodge': 'color-dodge',
+                        'color-burn': 'color-burn',
+                        'hard-light': 'hard-light',
+                        'soft-light': 'soft-light',
+                        'difference': 'difference',
+                        'exclusion': 'exclusion',
+                        'hue': 'hue',
+                        'saturation': 'saturation',
+                        'color': 'color',
+                        'luminosity': 'luminosity'
+                    };
+                    
+                    const compositeOp = compositeModeMap[savedMixMode] || 'hard-light';
+                    
+                    // 用配置的混合模式绘制光照层
+                    ctx.globalCompositeOperation = compositeOp;
+                    ctx.globalAlpha = opacityValue;
 
                     if (removeBorder) {
                         // 无边框模式：光照覆盖整个画布
@@ -3186,12 +3466,18 @@ function applyHorizontalStretch(element, ratio) {
                         reader.onloadend = () => resolve(reader.result);
                         reader.readAsDataURL(blob);
                     });
+                    
+                    // 从设置中读取光照混合模式和不透明度
+                    const savedMixMode = localStorage.getItem('lightingMixMode') || 'hard-light';
+                    const savedOpacity = localStorage.getItem('lightingOpacity');
+                    const opacityValue = savedOpacity ? parseFloat(savedOpacity) : 0.3;
+                    
                     svgContent += `  <defs>\n`;
                     svgContent += `    <filter id="export-lighting-filter" x="0" y="0" width="100%" height="100%">\n`;
                     svgContent += `      <feImage xlink:href="${lightingBase64}" result="lighting" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none"/>\n`;
-                    svgContent += `      <feBlend in="SourceGraphic" in2="lighting" mode="hard-light" result="blended"/>\n`;
+                    svgContent += `      <feBlend in="SourceGraphic" in2="lighting" mode="${savedMixMode}" result="blended"/>\n`;
                     svgContent += `      <feComponentTransfer>\n`;
-                    svgContent += `        <feFuncA type="linear" slope="0.3"/>\n`;
+                    svgContent += `        <feFuncA type="linear" slope="${opacityValue}"/>\n`;
                     svgContent += `      </feComponentTransfer>\n`;
                     svgContent += `    </filter>\n`;
                     svgContent += `  </defs>\n`;
@@ -3470,15 +3756,19 @@ function applyHorizontalStretch(element, ratio) {
     document.addEventListener('DOMContentLoaded', () => {
         const canvas = document.getElementById('canvas');
         if (!canvas) return;
+        const viewer = canvas.closest('.canvasViewer') || canvas.parentElement;
 
-        canvas.addEventListener('dragover', (e) => {
+        // 将 dragover/drop 绑定在 canvasViewer（父容器）上，
+        // 确保 canvas 内部的覆盖层（SVG border、lighting overlay、hanger 等）
+        // 不会拦截拖拽事件，保证 preventDefault() 始终被调用
+        viewer.addEventListener('dragover', (e) => {
             e.preventDefault();
             const payload = getPayloadFromEvent(e);
             if (!payload) { hideInsertLine(); return; }
             updateInsertIndicator(payload, e, compositeComponents, basicComponents, canvas);
         });
 
-        canvas.addEventListener('drop', (e) => {
+        viewer.addEventListener('drop', (e) => {
             e.preventDefault(); hideInsertLine();
             const payload = getPayloadFromEvent(e);
             if (!payload) return;
@@ -3572,8 +3862,17 @@ function applyHorizontalStretch(element, ratio) {
         if (btnExport && exportDropdown) {
             btnExport.addEventListener('click', (e) => {
                 e.stopPropagation();
+                // 如果保存菜单显示，先隐藏它
+                if (saveDropdown && saveDropdown.classList.contains('show')) {
+                    saveDropdown.classList.remove('show');
+                }
                 exportDropdown.classList.toggle('show');
             });
+            
+            exportDropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
             document.addEventListener('click', () => {
                 exportDropdown.classList.remove('show');
             });
@@ -3594,15 +3893,19 @@ function applyHorizontalStretch(element, ratio) {
         if (btnSave && saveDropdown) {
             btnSave.addEventListener('click', (e) => {
                 e.stopPropagation();
+                // 如果导出菜单显示，先隐藏它
+                if (exportDropdown && exportDropdown.classList.contains('show')) {
+                    exportDropdown.classList.remove('show');
+                }
                 saveDropdown.classList.toggle('show');
-            });
-            
-            document.addEventListener('click', () => {
-                saveDropdown.classList.remove('show');
             });
             
             saveDropdown.addEventListener('click', (e) => {
                 e.stopPropagation();
+            });
+            
+            document.addEventListener('click', () => {
+                saveDropdown.classList.remove('show');
             });
         }
         
@@ -3849,8 +4152,32 @@ function applyHorizontalStretch(element, ratio) {
                     // Update preview
                     updatePreviewFromInputs();
                     
-                    // Clear localStorage
+                    // Clear localStorage for custom styles
                     localStorage.removeItem('customStyles');
+                    
+                    // Reset lighting mix mode to default (hard-light)
+                    const lightingMixModeSelect = document.getElementById('lightingMixMode');
+                    const lightingOverlay = document.getElementById('lightingOverlay');
+                    if (lightingMixModeSelect && lightingOverlay) {
+                        lightingMixModeSelect.value = 'hard-light';
+                        lightingOverlay.style.mixBlendMode = 'hard-light';
+                        localStorage.setItem('lightingMixMode', 'hard-light');
+                    }
+                    
+                    // Reset lighting opacity to default (0.3 / 30%)
+                    const lightingOpacityInput = document.getElementById('lightingOpacity');
+                    if (lightingOpacityInput && lightingOverlay) {
+                        lightingOpacityInput.value = 30;
+                        lightingOverlay.style.opacity = 0.3;
+                        localStorage.setItem('lightingOpacity', '0.3');
+                    }
+                    
+                    // Reset PNG export scale to default (10)
+                    const pngExportScaleInput = document.getElementById('PNGExportScale');
+                    if (pngExportScaleInput) {
+                        pngExportScaleInput.value = 10;
+                        localStorage.setItem('pngExportScale', '10');
+                    }
                     
                     // Update saved state
                     savedSettings = defaultStyles;
@@ -4207,70 +4534,88 @@ function applyHorizontalStretch(element, ratio) {
 
     document.addEventListener('DOMContentLoaded', loadConfigAndInitialize);
 
-    function handleDrop(payload, e, composites, basicComponents, canvas) {
-        const { id } = payload;
-        const category = id === 'lineColorText' ? 'lineColor' : (payload.category || 'default');
-        const zoneClass = id === 'lineColorText' ? 'zone lineColor' : `zone ${category}`;
-        const x = e.clientX; const y = e.clientY;
-        const el = document.elementFromPoint(x, y);
-        const targetZone = el ? el.closest('.zone') : null;
+    async function handleDrop(payload, e, composites, basicComponents, canvas) {
+        try {
+            const { id } = payload;
+            const category = id === 'lineColorText' ? 'lineColor' : (payload.category || 'default');
+            const zoneClass = id === 'lineColorText' ? 'zone lineColor' : `zone ${category}`;
+            const x = e.clientX; const y = e.clientY;
+            const el = document.elementFromPoint(x, y);
+            const targetZone = el ? el.closest('.zone') : null;
 
-        const newNode = createNodeFromPayload(payload, composites, basicComponents);
-
-        if (targetZone) {
-            const targetCategory = targetZone.dataset.category || '';
-            if (targetCategory === category || (targetCategory === 'lineColor' && category === 'enter')) {
-                let inserted = false; const children = Array.from(targetZone.children);
-                for (let child of children) {
-                    const rect = child.getBoundingClientRect();
-                    if (x < (rect.left + rect.width / 2)) {
-                        targetZone.insertBefore(newNode, child);
-                        inserted = true; break;
-                    }
-                }
-                if (!inserted) targetZone.appendChild(newNode);
-                convertAllImgToInlineSvg(newNode);
-                openPropertyPanel(newNode);
+            const newNode = createNodeFromPayload(payload, composites, basicComponents);
+            if (!newNode) {
+                console.error('[handleDrop] createNodeFromPayload 返回空节点，payload:', payload);
                 return;
             }
-            
-            // 如果是基础元素添加到非basic的zone，应用目标zone的样式
-            if (payload.kind === 'basic' && targetCategory !== 'basic') {
-                const targetCategoryConfig = categoriesConfig.find(cat => cat.id === targetCategory);
-                if (targetCategoryConfig) {
-                    const styleTags = {
-                        color: targetCategoryConfig.bgColor
-                    };
-                    if (targetCategoryConfig.color) {
-                        styleTags.style = `color: ${targetCategoryConfig.color}`;
+
+            if (targetZone) {
+                const targetCategory = targetZone.dataset.category || '';
+                if (targetCategory === category || (targetCategory === 'lineColor' && category === 'enter')) {
+                    let inserted = false; const children = Array.from(targetZone.children);
+                    for (let child of children) {
+                        const rect = child.getBoundingClientRect();
+                        if (x < (rect.left + rect.width / 2)) {
+                            targetZone.insertBefore(newNode, child);
+                            inserted = true; break;
+                        }
                     }
-                    applyTagsToElement(newNode, styleTags);
+                    if (!inserted) targetZone.appendChild(newNode);
+                    await convertAllImgToInlineSvg(newNode);
+                    openPropertyPanel(newNode);
+                    return;
                 }
-                // 将新节点添加到目标zone
-                let inserted = false; const children = Array.from(targetZone.children);
-                for (let child of children) {
-                    const rect = child.getBoundingClientRect();
-                    if (x < (rect.left + rect.width / 2)) {
-                        targetZone.insertBefore(newNode, child);
-                        inserted = true; break;
+                
+                // 如果是基础元素添加到非basic的zone，应用目标zone的样式
+                if (payload.kind === 'basic' && targetCategory !== 'basic') {
+                    const targetCategoryConfig = categoriesConfig.find(cat => cat.id === targetCategory);
+                    if (targetCategoryConfig) {
+                        const styleTags = {
+                            color: targetCategoryConfig.bgColor
+                        };
+                        if (targetCategoryConfig.color) {
+                            styleTags.style = `color: ${targetCategoryConfig.color}`;
+                        }
+                        applyTagsToElement(newNode, styleTags);
                     }
+                    // 将新节点添加到目标zone
+                    let inserted = false; const children = Array.from(targetZone.children);
+                    for (let child of children) {
+                        const rect = child.getBoundingClientRect();
+                        if (x < (rect.left + rect.width / 2)) {
+                            targetZone.insertBefore(newNode, child);
+                            inserted = true; break;
+                        }
+                    }
+                    if (!inserted) targetZone.appendChild(newNode);
+                    await convertAllImgToInlineSvg(newNode);
+                    openPropertyPanel(newNode);
+                    return;
                 }
-                if (!inserted) targetZone.appendChild(newNode);
-                convertAllImgToInlineSvg(newNode);
-                openPropertyPanel(newNode);
-                return;
             }
+            createZoneElement(category, zoneClass, canvas).appendChild(newNode);
+            await convertAllImgToInlineSvg(newNode);
+            openPropertyPanel(newNode);
+        } catch (err) {
+            console.error('[handleDrop] 拖拽放置失败:', err, 'payload:', payload);
         }
-        createZoneElement(category, zoneClass, canvas).appendChild(newNode);
-        convertAllImgToInlineSvg(newNode);
-        openPropertyPanel(newNode);
     }
 
     function createNodeFromPayload(payload, composites, basicComponents) {
         if (payload.kind === 'composite') {
-            return renderCompositeComponent(composites.find((c) => c.id === payload.id), basicComponents);
+            const comp = composites.find((c) => c.id === payload.id);
+            if (!comp) {
+                console.error('[createNodeFromPayload] 未找到复合组件:', payload.id);
+                return null;
+            }
+            return renderCompositeComponent(comp, basicComponents);
         }
-        return renderBasicComponent(basicComponents.find((b) => b.id === payload.id), {}, undefined, false);
+        const basic = basicComponents.find((b) => b.id === payload.id);
+        if (!basic) {
+            console.error('[createNodeFromPayload] 未找到基础组件:', payload.id);
+            return null;
+        }
+        return renderBasicComponent(basic, {}, undefined, false);
     }
 
     function showInsertLineAt(canvas, left, top, height) {
@@ -4284,7 +4629,21 @@ function applyHorizontalStretch(element, ratio) {
     }
 
     function getPayloadFromEvent(e) {
-        try { return JSON.parse(e.dataTransfer.getData('application/json')); } catch (err) { }
+        try {
+            const raw = e.dataTransfer.getData('application/json');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') return parsed;
+            }
+        } catch (err) { /* 部分浏览器不支持读取 application/json MIME type */ }
+        // 尝试 text/plain 回退
+        try {
+            const raw = e.dataTransfer.getData('text/plain');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') return parsed;
+            }
+        } catch (err) { /* ignore */ }
         return currentDragPayload;
     }
 

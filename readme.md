@@ -26,6 +26,11 @@ The idea is inspired by Auto Layout & Components Library, so if you used Figma t
 
 ## 更新 Update log
 
+### v20260611.2
+
+* 添加了自定义图标功能，可以上传SVG格式文件作为图标。 Added Custom Icon (SVG) Upload feature.
+* 设定菜单现在支持调整光照效果和导出位图缩放倍率。New settings for adjusting lighting effect & export bitmap scale.
+
 ### v20260611.1
 
 * 添加了预设标牌功能，你可以快速的创建符合标准的标牌。Added Preset Signs feature.
@@ -58,10 +63,11 @@ The idea is inspired by Auto Layout & Components Library, so if you used Figma t
 - [x] 支持保存json到浏览器内
 - [x] 按照重庆轨道GK导视标准调节默认样式，并制作各个标牌样式
 - [x] 制作“预设标牌”功能，支持使用预制标牌json快速排版
-- [ ] 设置菜单支持调整输出图片大小
-- [ ] 设置菜单光照设置
-- [ ] 导出保存菜单互斥
-- [ ] 支持上传本地图标
+- [x] 设置菜单支持调整输出PNG大小
+- [x] 设置菜单光照设置
+- [x] 导出保存菜单互斥
+- [x] 支持上传本地图标
+- [ ] 添加分割线组件
 - [ ] 支持纵向复制画布（分行效果）
 - [ ] 暗色模式支持，多语言支持
 - [ ] 完成Addon支持 - 制作一个Sample Addon（申通）

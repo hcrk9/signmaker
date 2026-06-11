@@ -45,7 +45,7 @@
       },
       "canvasHeight": "60px",
       "customHTML": "<div class='shader' style='position:absolute;bottom:0;left:0;width:100%;height:6px;background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 28%, rgba(0,0,0,0.35) 100%);mix-blend-mode: multiply;pointer-events:none;'></div>",
-      "customCSS": "svg.icon {height: 36px;}\n.largeText {font-size: 50px}\n.textBox {gap:3px}\n.textCN {font-size:21px}\n.textEN {font-size:12px}\n.colorBar {width: 15px; height: 50px; margin-top: 13px;}\n.icon,.largeText,.textBox,.colorBar {margin-bottom:3px;}\n.exitInfo{align-self:normal;margin-top:0;}\n.zone{padding:0 12px;gap:9px}\n.composite{gap:9px}\n.stationName .textBox .textCN{font-size:24px}\n.stationName .textBox .textEN{font-size:14px}\n.stationName .textBox{margin-top:3px;gap:3px}",
+      "customCSS": "svg.icon, .icon {height: 36px;}\n.largeText {font-size: 50px}\n.textBox {gap:3px}\n.textCN {font-size:21px}\n.textEN {font-size:12px}\n.colorBar {width: 15px; height: 50px; margin-top: 13px;}\n.icon,.largeText,.textBox,.colorBar {margin-bottom:3px;}\n.exitInfo{align-self:normal;margin-top:0;}\n.zone{padding:0 12px;gap:9px}\n.composite{gap:9px}\n.stationName .textBox .textCN{font-size:24px}\n.stationName .textBox .textEN{font-size:14px}\n.stationName .textBox{margin-top:3px;gap:3px}",
       "canvasWidths": [
         { "id": "XG01", "name": "XG-01 (1000*200mm)", "value": 300 },
         { "id": "XG02", "name": "XG-02 (3000*200mm)", "value": 900 },
