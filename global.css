@@ -566,6 +566,8 @@ h3 {
     color: var(--color-active-dark);
 }
 
+/* Style Preview Canvas Styles */
+
 .stylePreviewWrapper {
     width: 100%;
     height: 80px;
@@ -622,6 +624,26 @@ h3 {
     font-size: 20px;
     white-space: nowrap;
 }
+
+.stylePreviewCanvas .largeText {
+    font-size: 82px;
+}
+
+.stylePreviewCanvas .colorBar {
+    width: 24px;
+    height: 75px;
+    margin-top: 15px;
+    color: var(--current-line-bg-default);
+}
+
+.stylePreviewCanvas .icon, .largeText, .textBox, .colorBar {
+    margin-bottom: 0!important;
+}
+
+.stylePreviewCanvas .composite {
+    gap: 12px!important;
+}
+/* End */
 
 .rightPanel {
     flex: 1;
@@ -1060,7 +1082,11 @@ h3 {
 /* --- Exit Info Text Styles --- */
 .exitInfo {
     align-self: flex-start;
-    margin-top: 19px;
+    margin-top: 17px;
+}
+
+.exitInfo .textBox {
+    gap: 6px;
 }
 
 .exitInfo .textCN {
@@ -1096,6 +1122,7 @@ h3 {
     display: flex;
     flex-flow: column nowrap;
     gap: 8px;
+    margin-top: 2px;
 }
 
 .textCN {
@@ -1128,6 +1155,11 @@ svg.icon {
     height: 75px;
     margin-top: 15px;
     color: var(--current-line-bg-default);
+}
+
+.dividerBar {
+    width: 4px;
+    background-color: #333333;
 }
 
 .composite {

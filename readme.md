@@ -26,6 +26,11 @@ The idea is inspired by Auto Layout & Components Library, so if you used Figma t
 
 ## 更新 Update log
 
+### v20260612.1
+
+* 添加了分割线组件。Added Divider component.
+* 一些样式修正。General Fix.
+
 ### v20260611.2
 
 * 添加了自定义图标功能，可以上传SVG格式文件作为图标。 Added Custom Icon (SVG) Upload feature.
@@ -67,7 +72,7 @@ The idea is inspired by Auto Layout & Components Library, so if you used Figma t
 - [x] 设置菜单光照设置
 - [x] 导出保存菜单互斥
 - [x] 支持上传本地图标
-- [ ] 添加分割线组件
+- [x] 添加分割线组件
 - [ ] 支持纵向复制画布（分行效果）
 - [ ] 暗色模式支持，多语言支持
 - [ ] 完成Addon支持 - 制作一个Sample Addon（申通）

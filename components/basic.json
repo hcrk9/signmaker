@@ -52,5 +52,19 @@
     "category": "basic",
     "feature": "editColor",
     "html": "<div class='colorBar'></div>"
+  },
+  {
+    "id": "dividerBarShort",
+    "name": "分割线",
+    "description": "短",
+    "category": "basic",
+    "html": "<div class='dividerBar' style='height: 60px'></div>"    
+  },
+  {
+    "id": "dividerBarLong",
+    "name": "分割线",
+    "description": "长",
+    "category": "basic",
+    "html": "<div class='dividerBar' style='height: 100%'></div>"    
   }
 ]
