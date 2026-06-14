@@ -25,7 +25,8 @@
       "icon/waiting.svg",
       "icon/elevator.svg",
       "icon/nursing.svg",
-      "icon/no_entry.svg"
+      "icon/no_entry.svg",
+      "icon/placeholder.svg"
     ],
     "html": "<img src='icon/default.svg' alt='ICON' class='icon'>"
   },
