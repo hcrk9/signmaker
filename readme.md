@@ -26,10 +26,16 @@ The idea is inspired by Auto Layout & Components Library, so if you used Figma t
 
 ## 更新 Update log
 
+### v20260616.1
+
+* 将导出图片从html2canvas切换为modern-screenshot，修复了导出数字失去pnum特性的问题。Switched from html2canvas to modern-screenshot, fixing export issues with opentype features.
+* 改善了SVG导出功能，现在它基本可用于导入Adobe Illustrator等生产软件。 Improved SVG export feature, which is pretty usable in vector editing softwares now.
+
 ### v20260614.1
 
 * 添加了分行功能（测试中），支持创建多行导视。Added Multi-Column feature (Preview).
 * 出口图标增加旋转功能。Added rotate feature for exit icon.
+* 添加了占位符图标，可以用来创建缩进。Added placeholder icon for creating indent.
 * 一些样式修正。General Fix.
 
 ### v20260612.1

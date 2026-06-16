@@ -192,7 +192,7 @@
                     </div>
                     <div class="creditExtraInfo">
                     <span style="font-weight: 600;">说明</span>
-                    <p>本站使用了 html2canvas 库，部分组件图标由Wikipedia用户David Xuang绘制。</p>
+                    <p>本站使用了 modern-screenshot 库，部分组件图标由Wikipedia用户David Xuang绘制。</p>
                     </div>
                 </div>
             </div>
@@ -303,6 +303,7 @@
                         <button id="btnExportPNG">PNG 图片</button>
                         <button id="btnExportPNGNoBorder">PNG 无边框</button>
                         <button id="btnExportSVG">SVG 图片</button>
+                        <button id="btnExportSVGNoBorder">SVG 无边框</button>
                     </div>
                 </div>
                 <span class="divider">·</span>
@@ -2665,10 +2666,6 @@ function applyHorizontalStretch(element, ratio) {
         canvas.style.borderStyle = style.borderStyle || 'none';
         canvas.style.borderColor = 'transparent';
 
-        // Apply border styles using CSS variables so canvas::after pseudo-element can render it
-        canvas.style.setProperty('--canvas-border-width', style.borderWidth || '0');
-        canvas.style.setProperty('--canvas-border-style', style.borderStyle || 'none');
-        
         // Parse borderColor: supports string (uniform) or object { top, right, bottom, left }
         const rawBorderColor = style.borderColor || 'transparent';
         let borderColorTop, borderColorRight, borderColorBottom, borderColorLeft;
@@ -2680,48 +2677,14 @@ function applyHorizontalStretch(element, ratio) {
         } else {
             borderColorTop = borderColorRight = borderColorBottom = borderColorLeft = rawBorderColor;
         }
-        const perDirectionColors = [borderColorTop, borderColorRight, borderColorBottom, borderColorLeft];
-        const hasAnyGradient = perDirectionColors.some(c => c.includes('linear-gradient') || c.includes('radial-gradient'));
-        const allSolid = !hasAnyGradient;
 
-        if (allSolid) {
-            // All four sides are solid colors → use traditional border-color
-            canvas.style.setProperty('--canvas-border-color', borderColorTop);
-            // Clear all per-direction gradient/mask variables
-            ['top', 'right', 'bottom', 'left'].forEach(dir => {
-                canvas.style.removeProperty(`--canvas-border-gradient-${dir}`);
-                canvas.style.removeProperty(`--canvas-border-mask-${dir}`);
-            });
-        } else {
-            // At least one direction uses a gradient → use 4-layer background + mask approach
-            canvas.style.setProperty('--canvas-border-color', 'transparent');
-            
-            // Set gradient for each direction
-            canvas.style.setProperty('--canvas-border-gradient-top', borderColorTop);
-            canvas.style.setProperty('--canvas-border-gradient-right', borderColorRight);
-            canvas.style.setProperty('--canvas-border-gradient-bottom', borderColorBottom);
-            canvas.style.setProperty('--canvas-border-gradient-left', borderColorLeft);
-            
-            // Set background size and position to restrict each gradient to its own border area
-            // Format: background-size: width height; background-position: x y;
-            // Top border: full width, top height, positioned at top
-            canvas.style.setProperty('--canvas-border-bg-size-top', `100% var(--canvas-border-width-top)`);
-            canvas.style.setProperty('--canvas-border-bg-pos-top', '0 0');
-            
-            // Right border: right width, full height, positioned at right
-            canvas.style.setProperty('--canvas-border-bg-size-right', `var(--canvas-border-width-right) 100%`);
-            canvas.style.setProperty('--canvas-border-bg-pos-right', '100% 0');
-            
-            // Bottom border: full width, bottom height, positioned at bottom
-            canvas.style.setProperty('--canvas-border-bg-size-bottom', `100% var(--canvas-border-width-bottom)`);
-            canvas.style.setProperty('--canvas-border-bg-pos-bottom', '0 100%');
-            
-            // Left border: left width, full height, positioned at left
-            canvas.style.setProperty('--canvas-border-bg-size-left', `var(--canvas-border-width-left) 100%`);
-            canvas.style.setProperty('--canvas-border-bg-pos-left', '0 0');
-        }
+        // Set gradient for each direction (used by SVG border)
+        canvas.style.setProperty('--canvas-border-gradient-top', borderColorTop);
+        canvas.style.setProperty('--canvas-border-gradient-right', borderColorRight);
+        canvas.style.setProperty('--canvas-border-gradient-bottom', borderColorBottom);
+        canvas.style.setProperty('--canvas-border-gradient-left', borderColorLeft);
 
-        // Extract individual border widths to position canvas::after correctly outside the padding box
+        // Extract individual border widths for SVG border positioning
         const parts = (style.borderWidth || '0').trim().split(/\s+/);
         let top = '0', right = '0', bottom = '0', left = '0';
         if (parts.length === 1) {
@@ -2744,18 +2707,6 @@ function applyHorizontalStretch(element, ratio) {
         canvas.style.setProperty('--canvas-border-width-right', right);
         canvas.style.setProperty('--canvas-border-width-bottom', bottom);
         canvas.style.setProperty('--canvas-border-width-left', left);
-
-        // If any direction uses a gradient, construct per-direction mask-image
-        if (hasAnyGradient) {
-            canvas.style.setProperty('--canvas-border-mask-top',
-                'linear-gradient(to bottom, black var(--canvas-border-width-top), transparent var(--canvas-border-width-top))');
-            canvas.style.setProperty('--canvas-border-mask-bottom',
-                'linear-gradient(to top, black var(--canvas-border-width-bottom), transparent var(--canvas-border-width-bottom))');
-            canvas.style.setProperty('--canvas-border-mask-left',
-                'linear-gradient(to right, black var(--canvas-border-width-left), transparent var(--canvas-border-width-left))');
-            canvas.style.setProperty('--canvas-border-mask-right',
-                'linear-gradient(to left, black var(--canvas-border-width-right), transparent var(--canvas-border-width-right))');
-        }
 
         if (style.hanger) {
             canvas.style.setProperty('--hanger-width', `${style.hanger.width}px`);
@@ -3313,14 +3264,22 @@ function applyHorizontalStretch(element, ratio) {
         }
     }
 
-    function ensureHtml2Canvas() {
-        if (window.html2canvas) return Promise.resolve();
+    function ensureModernScreenshot() {
+        if (window.modernScreenshot) return Promise.resolve();
+        return import('./modern-screenshot.mjs').then(mod => {
+            window.modernScreenshot = mod;
+        });
+    }
+
+    /**
+     * 将 data URL 转换为 HTMLImageElement（用于后续 Canvas 合成）
+     */
+    function dataUrlToImage(dataUrl) {
         return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = dataUrl;
         });
     }
 
@@ -3446,18 +3405,18 @@ function applyHorizontalStretch(element, ratio) {
         let exportSuccess = false;
 
         try {
-            await ensureHtml2Canvas();
+            await ensureModernScreenshot();
 
             // 检查是否已被取消
             if (signal.aborted) throw new Error('用户取消导出');
 
-            // 临时重置缩放以确保 html2canvas 能够以 1:1 分辨率完美捕捉样式
+            // 临时重置缩放以确保 modern-screenshot 能够以 1:1 分辨率完美捕捉样式
             canvasEl.style.zoom = '1';
 
             // 读取当前 SVG 边框宽度（来自 CSS 变量）
             const bw = getSvgBorderWidths(canvasEl);
 
-            // 始终隐藏 SVG 边框 —— html2canvas 无法正确处理 CSS 变量 calc() 定位和超出父元素边界的绝对定位
+            // 隐藏 SVG 边框 —— modern-screenshot 对 CSS 变量 calc() 定位和绝对定位的处理可能不稳定
             // 边框将通过 SVG 序列化方式单独渲染并合成
             if (svgBorder) {
                 svgBorder.style.display = 'none';
@@ -3466,7 +3425,7 @@ function applyHorizontalStretch(element, ratio) {
             // 临时移除 #canvas 的透明 CSS 边框
             // handleSignStyleChange 会设置透明边框（borderColor:transparent）用于布局占位
             // 如果不移除，offsetWidth/Height 会包含这些额外像素，导致：
-            //   1. html2canvas 截图中出现多余的透明区域
+            //   1. 截图中出现多余的透明区域
             //   2. 最终合成尺寸 = (内容+透明边框) + SVG边框 → 双重计算
             origBorderW = canvasEl.style.borderWidth;
             origBorderS = canvasEl.style.borderStyle;
@@ -3476,15 +3435,8 @@ function applyHorizontalStretch(element, ratio) {
             canvasEl.style.borderColor = '';
             domModified = true;
 
-            // 检测光照是否激活
-            const lightingOverlay = canvasEl.querySelector('#lightingOverlay');
-            const hasLighting = lightingOverlay && lightingOverlay.classList.contains('active');
-
-            // 导出时先隐藏光照层（html2canvas 不支持 mix-blend-mode）
-            if (hasLighting) {
-                lightingOverlay.classList.remove('active');
-                lightingOverlay.style.display = 'none';
-            }
+            // 光照层（#lightingOverlay）保持可见 —— modern-screenshot 支持 mix-blend-mode
+            // 无需像 html2canvas 那样手动隐藏再合成
 
             // 从设置中读取 PNG 导出缩放倍率
             const scale = getPNGExportScale();
@@ -3493,27 +3445,25 @@ function applyHorizontalStretch(element, ratio) {
             const contentW = canvasEl.offsetWidth;
             const contentH = canvasEl.offsetHeight;
             
-            console.log('开始 html2canvas 渲染...', {
+            console.log('开始 modern-screenshot 渲染...', {
                 width: contentW,
                 height: contentH,
                 scale: scale
             });
             
-            const contentCanvas = await html2canvas(canvasEl, {
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: null,
-                scale: scale,
-                width: contentW,
-                height: contentH,
-                scrollX: 0,
-                scrollY: 0,
-                logging: false, // 禁用 html2canvas 的日志输出
-                imageTimeout: 0, // 不设置图片加载超时
-                foreignObjectRendering: false // 不使用 foreignObject 渲染
+            // modern-screenshot 直接返回 data URL
+            const contentDataUrl = await modernScreenshot.domToPng(canvasEl, {
+                backgroundColor: null,       // 透明背景
+                scale: scale,                // 缩放倍率
+                width: contentW,             // 内容宽度
+                height: contentH,            // 内容高度
+                timeout: 60000,              // 60s 超时（含字体/图片加载）
+                features: {
+                    copyScrollbar: false,    // 不需要滚动条样式
+                }
             });
             
-            console.log('html2canvas 渲染完成');
+            console.log('modern-screenshot 渲染完成');
 
             // 检查是否已被取消
             if (signal.aborted) throw new Error('用户取消导出');
@@ -3527,12 +3477,18 @@ function applyHorizontalStretch(element, ratio) {
             }
             domModified = false;
 
+            // 将 data URL 转为 Image 以便后续 Canvas 合成
+            const contentImg = await dataUrlToImage(contentDataUrl);
+
             // === 合成最终画布 ===
             let finalCanvas;
 
             if (removeBorder) {
                 // 无边框模式：直接使用纯内容截图
-                finalCanvas = contentCanvas;
+                finalCanvas = document.createElement('canvas');
+                finalCanvas.width = contentImg.width;
+                finalCanvas.height = contentImg.height;
+                finalCanvas.getContext('2d').drawImage(contentImg, 0, 0);
             } else {
                 // 有边框模式：最终尺寸 = 纯内容尺寸 + SVG 边框
                 const totalW = contentW + bw.left + bw.right;
@@ -3544,7 +3500,7 @@ function applyHorizontalStretch(element, ratio) {
                 const fCtx = finalCanvas.getContext('2d');
 
                 // 绘制画布内容（偏移到 SVG 边框内部区域）
-                fCtx.drawImage(contentCanvas, bw.left * scale, bw.top * scale);
+                fCtx.drawImage(contentImg, bw.left * scale, bw.top * scale);
 
                 // 序列化 SVG 边框并绘制到最终画布
                 if (svgBorder) {
@@ -3559,84 +3515,6 @@ function applyHorizontalStretch(element, ratio) {
 
             // 检查是否已被取消
             if (signal.aborted) throw new Error('用户取消导出');
-
-            // 如果有光照效果，手动用 Canvas 2D API 合成 soft-light 混合模式
-            if (hasLighting) {
-                // 恢复光照层显示状态
-                lightingOverlay.style.display = '';
-                lightingOverlay.classList.add('active');
-
-                try {
-                    // 用 fetch + blob 加载光照图片（避免 crossOrigin CORS 问题）
-                    const res = await fetch('icon/lighting.png');
-                    const blob = await res.blob();
-                    const bitmapUrl = URL.createObjectURL(blob);
-                    const lightingImg = await new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.onload = () => resolve(img);
-                        img.onerror = reject;
-                        img.src = bitmapUrl;
-                    });
-
-                    // 如果光照合成需要新画布（有边框时 finalCanvas 已是新建的，可直接绘制）
-                    let composeCanvas = finalCanvas;
-                    if (removeBorder) {
-                        composeCanvas = document.createElement('canvas');
-                        composeCanvas.width = finalCanvas.width;
-                        composeCanvas.height = finalCanvas.height;
-                        composeCanvas.getContext('2d').drawImage(finalCanvas, 0, 0);
-                    }
-                    const ctx = composeCanvas.getContext('2d');
-
-                    // 从设置中读取光照混合模式和不透明度
-                    const savedMixMode = localStorage.getItem('lightingMixMode') || 'hard-light';
-                    const savedOpacity = localStorage.getItem('lightingOpacity');
-                    const opacityValue = savedOpacity ? parseFloat(savedOpacity) : 0.3;
-                    
-                    // 将 CSS mix-blend-mode 映射到 Canvas globalCompositeOperation
-                    // 注意：不是所有 CSS 混合模式都有对应的 Canvas 复合操作
-                    const compositeModeMap = {
-                        'normal': 'source-over',
-                        'multiply': 'multiply',
-                        'screen': 'screen',
-                        'overlay': 'overlay',
-                        'darken': 'darken',
-                        'lighten': 'lighten',
-                        'color-dodge': 'color-dodge',
-                        'color-burn': 'color-burn',
-                        'hard-light': 'hard-light',
-                        'soft-light': 'soft-light',
-                        'difference': 'difference',
-                        'exclusion': 'exclusion',
-                        'hue': 'hue',
-                        'saturation': 'saturation',
-                        'color': 'color',
-                        'luminosity': 'luminosity'
-                    };
-                    
-                    const compositeOp = compositeModeMap[savedMixMode] || 'hard-light';
-                    
-                    // 用配置的混合模式绘制光照层
-                    ctx.globalCompositeOperation = compositeOp;
-                    ctx.globalAlpha = opacityValue;
-
-                    if (removeBorder) {
-                        // 无边框模式：光照覆盖整个画布
-                        ctx.drawImage(lightingImg, 0, 0, composeCanvas.width, composeCanvas.height);
-                    } else {
-                        // 有边框模式：光照仅覆盖内容区域（边框内部）
-                        ctx.drawImage(lightingImg,
-                            bw.left * scale, bw.top * scale,
-                            contentW * scale, contentH * scale);
-                    }
-                    ctx.globalCompositeOperation = 'source-over';
-
-                    finalCanvas = composeCanvas;
-                    URL.revokeObjectURL(bitmapUrl);
-                } catch (lightErr) {
-                    console.warn('光照合成失败，将导出无光照版本:', lightErr);
-                }
-            }
 
             // 还原网页上的缩放
             canvasEl.style.zoom = originalZoom;
@@ -3655,7 +3533,7 @@ function applyHorizontalStretch(element, ratio) {
             
             // 如果是用户取消，不显示错误提示
             if (e.message !== '用户取消导出') {
-                alert('PNG 导出失败，请检查控制台错误信息。');
+                showToast('PNG 导出失败: ' + (e.message || '未知错误'));
             }
 
             // 确保异常时恢复所有临时修改的 DOM 状态
@@ -3668,21 +3546,17 @@ function applyHorizontalStretch(element, ratio) {
             if (svgBorder) {
                 svgBorder.style.display = originalSvgDisplay;
             }
-            // 恢复光照层
-            if (hasLighting) {
-                const lo = document.getElementById('lightingOverlay');
-                if (lo) { lo.style.display = ''; lo.classList.add('active'); }
-            }
         } finally {
             // 隐藏导出弹窗
             toggleExportPopup(false);
+            const wasAborted = signal.aborted;
             exportAbortController = null;
 
-            // 显示 Toast 提示
+            // 显示 Toast 提示（成功/失败，取消时不显示）
             if (exportSuccess) {
                 showToast('导出 PNG 成功');
-            } else {
-                showToast('导出 PNG 失败');
+            } else if (!wasAborted) {
+                // catch 中已调用 showToast 显示具体错误，此处不再重复
             }
         }
     }
@@ -3695,7 +3569,8 @@ function applyHorizontalStretch(element, ratio) {
         return _exportPNGCore(true);
     }
 
-    async function exportToSVG() {
+
+    async function exportToSVG(includeBorder = true) {
         const canvas = document.getElementById('canvas');
         if (!canvas) return;
 
@@ -3713,8 +3588,27 @@ function applyHorizontalStretch(element, ratio) {
             const originalZoom = canvas.style.zoom || '1';
             canvas.style.zoom = '1';
 
-            const width = canvas.offsetWidth;
-            const height = canvas.offsetHeight;
+            // 计算实际内容边界框（消除画布显式尺寸设置导致的多余空白，统一使用 getBoundingClientRect 避免缩放不一致）
+            const zones = canvas.querySelectorAll('.zone');
+            const canvasRect = canvas.getBoundingClientRect();
+            let contentMinX = Infinity, contentMaxX = -Infinity;
+            let contentMinY = Infinity, contentMaxY = -Infinity;
+            zones.forEach(zone => {
+                const zoneStyle = window.getComputedStyle(zone);
+                if (zoneStyle.display === 'none') return;
+                const r = zone.getBoundingClientRect();
+                if (r.width > 0) {
+                    contentMinX = Math.min(contentMinX, r.left - canvasRect.left);
+                    contentMaxX = Math.max(contentMaxX, r.right - canvasRect.left);
+                }
+                if (r.height > 0) {
+                    contentMinY = Math.min(contentMinY, r.top - canvasRect.top);
+                    contentMaxY = Math.max(contentMaxY, r.bottom - canvasRect.top);
+                }
+            });
+            // 宽度和高度均使用 zone 实际边界框（消除画布显式尺寸设置的多余空白）
+            const width = (contentMaxX > contentMinX) ? (contentMaxX - contentMinX) : canvas.offsetWidth;
+            const height = (contentMaxY > contentMinY) ? (contentMaxY - contentMinY) : canvas.offsetHeight;
             
             // 获取画布背景色
             const canvasStyle = window.getComputedStyle(canvas);
@@ -3725,45 +3619,43 @@ function applyHorizontalStretch(element, ratio) {
             const lightingOverlayEl = document.getElementById('lightingOverlay');
             const hasLighting = lightingOverlayEl && lightingOverlayEl.classList.contains('active');
 
-            // 2. 初始化标准纯矢量 SVG 骨架
-            let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">\n`;
-
-            // 如果启用了光照效果，提前添加 filter 定义并创建包裹组
+            // 预加载光照贴图 base64（如果启用）
+            let lightingBase64 = null;
             if (hasLighting) {
                 try {
                     const res = await fetch('icon/lighting.png');
                     const blob = await res.blob();
-                    const lightingBase64 = await new Promise((resolve) => {
+                    lightingBase64 = await new Promise((resolve) => {
                         const reader = new FileReader();
                         reader.onloadend = () => resolve(reader.result);
                         reader.readAsDataURL(blob);
                     });
-                    
-                    // 从设置中读取光照混合模式和不透明度
-                    const savedMixMode = localStorage.getItem('lightingMixMode') || 'hard-light';
-                    const savedOpacity = localStorage.getItem('lightingOpacity');
-                    const opacityValue = savedOpacity ? parseFloat(savedOpacity) : 0.3;
-                    
-                    svgContent += `  <defs>\n`;
-                    svgContent += `    <filter id="export-lighting-filter" x="0" y="0" width="100%" height="100%">\n`;
-                    svgContent += `      <feImage xlink:href="${lightingBase64}" result="lighting" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="none"/>\n`;
-                    svgContent += `      <feBlend in="SourceGraphic" in2="lighting" mode="${savedMixMode}" result="blended"/>\n`;
-                    svgContent += `      <feComponentTransfer>\n`;
-                    svgContent += `        <feFuncA type="linear" slope="${opacityValue}"/>\n`;
-                    svgContent += `      </feComponentTransfer>\n`;
-                    svgContent += `    </filter>\n`;
-                    svgContent += `  </defs>\n`;
                 } catch (e) {
-                    console.warn('SVG 光照贴图嵌入失败:', e);
+                    console.warn('光照贴图加载失败:', e);
                 }
-                // 用 <g> 包裹所有内容，对整组应用光照滤镜
-                svgContent += `  <g filter="url(#export-lighting-filter)">\n`;
             }
-            
-            // 渲染标牌底色
-            svgContent += `  <rect width="${width}" height="${height}" fill="${canvasSvgBg}" />\n`;
+
+            // 读取 SVG 渐变边框宽度
+            const svgBorderEl = document.getElementById('canvas-svg-border');
+            const hasSvgBorder = includeBorder && svgBorderEl && svgBorderEl.style.display !== 'none';
+            const bw = hasSvgBorder ? getSvgBorderWidths(canvas) : { top: 0, bottom: 0, left: 0, right: 0 };
+            const totalW = width + bw.left + bw.right;
+            const totalH = height + bw.top + bw.bottom;
+            const offX = bw.left;
+            const offY = bw.top;
+
+            // 2. 初始化标准纯矢量 SVG 骨架（包含边框区域的总尺寸）
+            let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">\n`;
+
+            // 渲染标牌底色（覆盖含边框的完整区域）
+            svgContent += `  <rect width="${totalW}" height="${totalH}" fill="${canvasSvgBg}" />\n`;
 
             // 3. 递归遍历 DOM 树，将每个可视元素提取并重组为标准的绝对坐标 SVG 节点
+            // canvas 有实际 CSS border（透明，用于布局），getBoundingClientRect 返回 border box，
+            // 而子元素坐标从 content box 开始，需减去 canvas 的 CSS border 偏移
+            const canvasCssBorderLeft = parseFloat(canvasStyle.borderLeftWidth) || 0;
+            const canvasCssBorderTop = parseFloat(canvasStyle.borderTopWidth) || 0;
+
             async function processElement(element) {
                 // 检查是否已被取消
                 if (signal.aborted) throw new Error('用户取消导出');
@@ -3771,11 +3663,11 @@ function applyHorizontalStretch(element, ratio) {
                 const styles = window.getComputedStyle(element);
                 if (styles.display === 'none' || styles.visibility === 'hidden' || styles.opacity === '0') return;
 
-                // 计算当前元素相对于标牌画布（canvas）的绝对物理坐标与宽高
+                // 计算当前元素相对于标牌画布（canvas）内容区域的绝对物理坐标（含 SVG 边框偏移，扣除 canvas CSS border）
                 const rect = element.getBoundingClientRect();
                 const canvasRect = canvas.getBoundingClientRect();
-                const x = rect.left - canvasRect.left;
-                const y = rect.top - canvasRect.top;
+                const x = rect.left - canvasRect.left - canvasCssBorderLeft + offX;
+                const y = rect.top - canvasRect.top - canvasCssBorderTop + offY;
                 const w = rect.width;
                 const h = rect.height;
 
@@ -3894,7 +3786,7 @@ function applyHorizontalStretch(element, ratio) {
                     return;
                 }
 
-                // 情况 C：【精简、明确的中英文文本分离方案】
+                // 情况 C：文本节点渲染 —— 使用元素自身 computedStyle 的 font-family
                 for (let child of element.childNodes) {
                     if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() !== '') {
                         const rawText = child.textContent.trim();
@@ -3902,6 +3794,13 @@ function applyHorizontalStretch(element, ratio) {
                         const fontSize = styles.fontSize;
                         const fontWeight = styles.fontWeight;
                         const fontColor = styles.color;
+                        // 直接使用元素 computedStyle 的 font-family（如 Noto Sans / IBM Plex Sans SC / Geist）
+                        // 去除 CSS 引号（getComputedStyle 返回 '"IBM Plex Sans SC"' 等形式），避免 XML 属性解析错误
+                        // 追加 sans-serif 回退字体，确保在字体不可用时仍有合理显示
+                        const rawFontFamily = (styles.fontFamily || 'sans-serif').replace(/["']/g, '').trim();
+                        const cleanFontFamily = (rawFontFamily || 'sans-serif') + (rawFontFamily && !/sans-serif/i.test(rawFontFamily) ? ', sans-serif' : '');
+                        const escapeXml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+                        const fontFamily = escapeXml(cleanFontFamily);
 
                         // 1. 动态确定文本对齐锚点
                         const textAlign = styles.textAlign || 'left';
@@ -3922,30 +3821,16 @@ function applyHorizontalStretch(element, ratio) {
                         const fSize = parseFloat(fontSize) || 16;
                         const textY = y + paddingTop + (h - paddingTop - paddingBottom) / 2 + (fSize * 0.35);
 
-                        // 3. 将文字按照「中文字符」和「非中文字符（西文/数字/空格）」进行严格拆分
-                        // \u4e00-\u9fa5 是中文字符集，\u3000-\u303f 是中文标点符号
-                        const tokens = rawText.split(/([\u4e00-\u9fa5\u3000-\u303f]+)/g).filter(Boolean);
+                        // XML 安全转义，防止 ParserError
+                        const escapedText = rawText
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&apos;');
 
-                        // 构造精准声明字体的 <text> 节点
-                        let textNodeStr = `  <text x="${textX}" y="${textY}" font-size="${fontSize}" font-weight="${fontWeight}" fill="${fontColor}" text-anchor="${textAnchor}">`;
-                        
-                        for (let token of tokens) {
-                            // 如果包含中文字符，绑定 IBM Plex Sans SC，否则绑定 Geist
-                            const isCJK = /[\u4e00-\u9fa5\u3000-\u303f]/.test(token);
-                            const targetFont = isCJK ? 'IBM Plex Sans SC' : 'Geist';
-
-                            // XML 安全转义，防止 ParserError
-                            const escapedToken = token
-                                .replace(/&/g, '&amp;')
-                                .replace(/</g, '&lt;')
-                                .replace(/>/g, '&gt;')
-                                .replace(/"/g, '&quot;')
-                                .replace(/'/g, '&apos;');
-
-                            // 用 tspan 将中西文字体绝对锁死，杜绝渲染引擎胡乱回退
-                            textNodeStr += `<tspan font-family="${targetFont}">${escapedToken}</tspan>`;
-                        }
-                        textNodeStr += `</text>\n`;
+                        // 构造 <text> 节点，font-family 直接取自元素的 computedStyle
+                        const textNodeStr = `  <text x="${textX}" y="${textY}" font-size="${fontSize}" font-weight="${fontWeight}" font-family="${fontFamily}" fill="${fontColor}" text-anchor="${textAnchor}">${escapedText}</text>\n`;
                         
                         svgContent += textNodeStr;
                     }
@@ -3959,48 +3844,112 @@ function applyHorizontalStretch(element, ratio) {
                 }
             }
 
-            // 4. 标牌外壳描边转矢量路径
-            const afterStyle = window.getComputedStyle(canvas, '::after');
-            if (afterStyle && afterStyle.borderStyle !== 'none' && afterStyle.borderWidth !== '0px') {
-                const borderTop = parseFloat(afterStyle.borderTopWidth) || 0;
-                const borderLeft = parseFloat(afterStyle.borderLeftWidth) || 0;
-                const borderBottom = parseFloat(afterStyle.borderBottomWidth) || 0;
-                const borderRight = parseFloat(afterStyle.borderRightWidth) || 0;
-                const borderColor = afterStyle.borderColor || '#151515';
-                const borderRadius = parseFloat(afterStyle.borderRadius) || 0;
-
-                if (borderTop > 0 || borderLeft > 0) {
-                    if (borderTop === borderLeft && borderTop === borderBottom && borderTop === borderRight) {
-                        svgContent += `  <rect x="${borderTop / 2}" y="${borderTop / 2}" width="${width - borderTop}" height="${height - borderTop}" rx="${borderRadius}" ry="${borderRadius}" fill="none" stroke="${borderColor}" stroke-width="${borderTop}" stroke-linejoin="round" />\n`;
-                    } else {
-                        svgContent += `  \n`;
-                        svgContent += `  <path d="M0,0 L${width},0 L${width},${height} L0,${height} Z M${borderLeft},${borderTop} L${borderLeft},${height - borderBottom} L${width - borderRight},${height - borderBottom} L${width - borderRight},${borderTop} Z" fill="${borderColor}" />\n`;
-                    }
-                }
-            }
-
-            // 5. 按层级顺序依次扫描渲染所有的 Zone 色块及内部组件
-            const zones = canvas.querySelectorAll('.zone');
+            // 4. 按层级顺序依次扫描渲染所有的 Zone 色块及内部组件
             for (let zone of zones) {
                 await processElement(zone);
             }
 
-            // 如果启用了光照效果，关闭 <g> 包裹标签
-            if (hasLighting) {
-                svgContent += `  </g>\n`;
+            // 5. 导出 custom HTML overlay（使用 foreignObject 嵌入）
+            const customHtmlOverlays = canvas.querySelectorAll('.custom-html-overlay');
+            customHtmlOverlays.forEach(overlay => {
+                const overlayStyles = window.getComputedStyle(overlay);
+                if (overlayStyles.display === 'none' || overlayStyles.visibility === 'hidden') return;
+                const overlayRect = overlay.getBoundingClientRect();
+                if (overlayRect.width <= 0 || overlayRect.height <= 0) return;
+                const ox = overlayRect.left - canvasRect.left - canvasCssBorderLeft + offX;
+                const oy = overlayRect.top - canvasRect.top - canvasCssBorderTop + offY;
+                const ow = overlayRect.width;
+                const oh = overlayRect.height;
+                try {
+                    const serializer = new XMLSerializer();
+                    const htmlContent = serializer.serializeToString(overlay);
+                    svgContent += `  <!-- Custom HTML Overlay -->\n`;
+                    svgContent += `  <foreignObject x="${ox}" y="${oy}" width="${ow}" height="${oh}">\n`;
+                    svgContent += `    ${htmlContent}\n`;
+                    svgContent += `  </foreignObject>\n`;
+                } catch (e) {
+                    console.warn('Custom HTML overlay 导出失败:', e);
+                }
+            });
+
+            // 6. 嵌入 SVG 渐变边框
+            if (hasSvgBorder) {
+                try {
+                    const clone = svgBorderEl.cloneNode(true);
+                    clone.setAttribute('width', totalW);
+                    clone.setAttribute('height', totalH);
+                    clone.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+                    clone.removeAttribute('style');
+
+                    // 解析 calc() 表达式为实际像素值
+                    clone.querySelectorAll('rect').forEach(rect => {
+                        ['x', 'y', 'width', 'height'].forEach(attr => {
+                            const val = rect.getAttribute(attr);
+                            if (val && val.includes('calc')) {
+                                const match = val.match(/calc\(100%\s*([+-])\s*(\d+)px\)/);
+                                if (match) {
+                                    const pct100 = attr === 'x' || attr === 'width' ? totalW : totalH;
+                                    const px = parseInt(match[2], 10);
+                                    const resolved = match[1] === '-' ? pct100 - px : pct100 + px;
+                                    rect.setAttribute(attr, resolved);
+                                }
+                            }
+                        });
+                        // 将百分比值解析为像素值
+                        ['width', 'height'].forEach(attr => {
+                            if (rect.getAttribute(attr) === '100%') {
+                                rect.setAttribute(attr, attr === 'width' ? totalW : totalH);
+                            }
+                        });
+                    });
+
+                    // 移除 clipPath（导出不需要裁剪）
+                    clone.querySelectorAll('clipPath').forEach(cp => cp.remove());
+                    clone.querySelectorAll('[clip-path]').forEach(el => el.removeAttribute('clip-path'));
+
+                    // 移除宽度为 0 的边框 rect，避免导出无意义的描边
+                    const dirRectMap = { top: 'svg-rect-top', bottom: 'svg-rect-bottom', left: 'svg-rect-left', right: 'svg-rect-right' };
+                    for (const [dir, rectId] of Object.entries(dirRectMap)) {
+                        if (bw[dir] === 0) {
+                            const rectEl = clone.querySelector('#' + rectId);
+                            if (rectEl) rectEl.remove();
+                        }
+                    }
+
+                    const serializer = new XMLSerializer();
+                    let borderSvgStr = serializer.serializeToString(clone);
+                    borderSvgStr = borderSvgStr.replace(/<\?xml[\s\S]*?\?>/g, '').replace(/<!DOCTYPE[\s\S]*?>/g, '');
+                    const innerMatch = borderSvgStr.match(/<svg[^>]*>([\s\S]*)<\/svg>/i);
+                    if (innerMatch && innerMatch[1]) {
+                        svgContent += `  <!-- SVG Gradient Border -->\n`;
+                        svgContent += innerMatch[1];
+                    }
+                } catch (e) {
+                    console.warn('SVG 边框嵌入失败:', e);
+                }
+            }
+
+            // 7. 光照效果：作为独立 <image> 图层叠加在所有内容之上，使用 mix-blend-mode
+            if (hasLighting && lightingBase64) {
+                const savedMixMode = localStorage.getItem('lightingMixMode') || 'hard-light';
+                const savedOpacity = localStorage.getItem('lightingOpacity');
+                const opacityValue = savedOpacity ? parseFloat(savedOpacity) : 0.3;
+                svgContent += `  <!-- Lighting Overlay -->\n`;
+                svgContent += `  <image x="0" y="0" width="${totalW}" height="${totalH}" xlink:href="${lightingBase64}" style="mix-blend-mode: ${savedMixMode}; opacity: ${opacityValue};" preserveAspectRatio="none"/>\n`;
             }
 
             svgContent += `</svg>`;
 
-            // 6. 还原网页当前的真实缩放状态
+            // 8. 还原网页当前的真实缩放状态
             canvas.style.zoom = originalZoom;
 
-            // 7. 生成离线标准 SVG 矢量文件并触发浏览器下载
+            // 9. 生成离线标准 SVG 矢量文件并触发浏览器下载
+            const suffix = includeBorder ? '' : '_无边框';
             const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${document.getElementById('projectTitle').textContent.trim()}.svg`;
+            a.download = `${document.getElementById('projectTitle').textContent.trim()}${suffix}.svg`;
             a.click();
             URL.revokeObjectURL(url);
 
@@ -4155,7 +4104,9 @@ function applyHorizontalStretch(element, ratio) {
         const btnExportSVG = document.getElementById('btnExportSVG');
         if (btnExportPNG) btnExportPNG.addEventListener('click', exportToPNG);
         if (btnExportPNGNoBorder) btnExportPNGNoBorder.addEventListener('click', exportToPNGNoBorder);
-        if (btnExportSVG) btnExportSVG.addEventListener('click', exportToSVG);
+        if (btnExportSVG) btnExportSVG.addEventListener('click', () => exportToSVG(true));
+        const btnExportSVGNoBorder = document.getElementById('btnExportSVGNoBorder');
+        if (btnExportSVGNoBorder) btnExportSVGNoBorder.addEventListener('click', () => exportToSVG(false));
 
         const btnSave = document.getElementById('btnSave');
         const saveDropdown = document.getElementById('saveDropdown');
@@ -5064,7 +5015,7 @@ function applyHorizontalStretch(element, ratio) {
             if (lWidth > 0) {
                 rectLeft.setAttribute('x', 0);
                 rectLeft.setAttribute('width', lWidth);
-                rectLeft.setAttribute('y', startY);
+                rectLeft.setAttribute('y', 0);
                 // ✨ 核心修复 2：不再进行复杂的 calc 减法计算。
                 // 高度直接设为 100%，多出来的部分自然会被外层的 clipPath 切得干干净净，100% 完美贴底！
                 rectLeft.setAttribute('height', '100%'); 
@@ -5080,7 +5031,7 @@ function applyHorizontalStretch(element, ratio) {
             if (rWidth > 0) {
                 rectRight.setAttribute('x', `calc(100% - ${rWidth}px)`);
                 rectRight.setAttribute('width', rWidth);
-                rectRight.setAttribute('y', startY);
+                rectRight.setAttribute('y', 0);
                 rectRight.setAttribute('height', '100%'); // 同样暴力贯穿，靠 clipPath 兜底
             } else {
                 rectRight.setAttribute('width', 0);
